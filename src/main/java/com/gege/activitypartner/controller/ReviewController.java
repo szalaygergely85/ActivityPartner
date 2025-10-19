@@ -1,13 +1,17 @@
 package com.gege.activitypartner.controller;
 
+import com.gege.activitypartner.config.SecurityContextUtil;
 import com.gege.activitypartner.dto.ReviewRequest;
 import com.gege.activitypartner.dto.ReviewResponse;
 import com.gege.activitypartner.dto.ReviewUpdateRequest;
+import com.gege.activitypartner.entity.User;
+import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +23,17 @@ import java.util.List;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final SecurityContextUtil securityContextUtil;
+    private final UserRepository userRepository;
 
     // Create review
     @PostMapping
-    public ResponseEntity<ReviewResponse> createReview(
-            @Valid @RequestBody ReviewRequest request,
-            @RequestParam Long reviewerId) { // TODO: Replace with authenticated user from JWT
-        ReviewResponse response = reviewService.createReview(request, reviewerId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ReviewResponse response = reviewService.createReview(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -52,20 +60,25 @@ public class ReviewController {
 
     // Update own review
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long id,
-            @Valid @RequestBody ReviewUpdateRequest request,
-            @RequestParam Long reviewerId) { // TODO: Replace with authenticated user from JWT
-        ReviewResponse response = reviewService.updateReview(id, request, reviewerId);
+            @Valid @RequestBody ReviewUpdateRequest request) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ReviewResponse response = reviewService.updateReview(id, request, user.getId());
         return ResponseEntity.ok(response);
     }
 
     // Delete own review
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(
-            @PathVariable Long id,
-            @RequestParam Long reviewerId) { // TODO: Replace with authenticated user from JWT
-        reviewService.deleteReview(id, reviewerId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        reviewService.deleteReview(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

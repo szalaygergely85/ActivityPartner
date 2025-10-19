@@ -1,13 +1,17 @@
 package com.gege.activitypartner.controller;
 
+import com.gege.activitypartner.config.SecurityContextUtil;
 import com.gege.activitypartner.dto.ActivityRequestDTO;
 import com.gege.activitypartner.dto.ActivityResponseDTO;
 import com.gege.activitypartner.dto.ActivityUpdateDTO;
+import com.gege.activitypartner.entity.User;
+import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +23,17 @@ import java.util.List;
 public class ActivityController {
 
     private final ActivityService activityService;
+    private final SecurityContextUtil securityContextUtil;
+    private final UserRepository userRepository;
 
     // Create new activity
     @PostMapping
-    public ResponseEntity<ActivityResponseDTO> createActivity(
-            @Valid @RequestBody ActivityRequestDTO request,
-            @RequestParam Long creatorId) { // TODO: Replace with authenticated user from JWT
-        ActivityResponseDTO response = activityService.createActivity(request, creatorId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ActivityResponseDTO> createActivity(@Valid @RequestBody ActivityRequestDTO request) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ActivityResponseDTO response = activityService.createActivity(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -73,38 +81,47 @@ public class ActivityController {
 
     // Update activity
     @PatchMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ActivityResponseDTO> updateActivity(
             @PathVariable Long id,
-            @Valid @RequestBody ActivityUpdateDTO updateDTO,
-            @RequestParam Long userId) { // TODO: Replace with authenticated user from JWT
-        ActivityResponseDTO response = activityService.updateActivity(id, updateDTO, userId);
+            @Valid @RequestBody ActivityUpdateDTO updateDTO) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ActivityResponseDTO response = activityService.updateActivity(id, updateDTO, user.getId());
         return ResponseEntity.ok(response);
     }
 
     // Cancel activity
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<ActivityResponseDTO> cancelActivity(
-            @PathVariable Long id,
-            @RequestParam Long userId) { // TODO: Replace with authenticated user from JWT
-        ActivityResponseDTO response = activityService.cancelActivity(id, userId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ActivityResponseDTO> cancelActivity(@PathVariable Long id) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ActivityResponseDTO response = activityService.cancelActivity(id, user.getId());
         return ResponseEntity.ok(response);
     }
 
     // Complete activity
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<ActivityResponseDTO> completeActivity(
-            @PathVariable Long id,
-            @RequestParam Long userId) { // TODO: Replace with authenticated user from JWT
-        ActivityResponseDTO response = activityService.completeActivity(id, userId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ActivityResponseDTO> completeActivity(@PathVariable Long id) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ActivityResponseDTO response = activityService.completeActivity(id, user.getId());
         return ResponseEntity.ok(response);
     }
 
     // Delete activity
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteActivity(
-            @PathVariable Long id,
-            @RequestParam Long userId) { // TODO: Replace with authenticated user from JWT
-        activityService.deleteActivity(id, userId);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        activityService.deleteActivity(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }
