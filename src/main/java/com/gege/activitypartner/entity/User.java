@@ -49,6 +49,12 @@ public class User {
 
     private String badge; // Special badges: ⭐, 👑, 🏔️, 💎
 
+    @Column(length = 500)
+    private String fcmToken; // Firebase Cloud Messaging device token for push notifications
+
+    @Column(nullable = false)
+    private Boolean notificationsEnabled = true; // User preference for receiving notifications
+
     @Column(nullable = false)
     private Boolean isActive = true;
 

@@ -23,6 +23,7 @@ public class ActivityParticipantService {
     private final ActivityParticipantRepository participantRepository;
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // Express interest in an activity
     public ParticipantResponse expressInterest(Long activityId, Long userId) {
@@ -48,6 +49,18 @@ public class ActivityParticipantService {
         participant.setIsFriend(false); // TODO: Implement friend check logic
 
         ActivityParticipant saved = participantRepository.save(participant);
+
+        // Notify activity creator about new interest
+        notificationService.createAndSendNotification(
+                activity.getCreator(),
+                "New Interest in Your Activity",
+                user.getFullName() + " is interested in \"" + activity.getTitle() + "\"",
+                NotificationType.PARTICIPANT_INTERESTED,
+                activity.getId(),
+                saved.getId(),
+                null
+        );
+
         return mapToParticipantResponse(saved);
     }
 
@@ -131,6 +144,28 @@ public class ActivityParticipantService {
 
         participant.setStatus(newStatus);
         ActivityParticipant updated = participantRepository.save(participant);
+
+        // Notify participant about status change
+        String notificationTitle = newStatus == ParticipantStatus.ACCEPTED
+                ? "Interest Accepted!"
+                : "Interest Declined";
+        String notificationMessage = newStatus == ParticipantStatus.ACCEPTED
+                ? "Your interest in \"" + participant.getActivity().getTitle() + "\" was accepted. Confirm your participation!"
+                : "Your interest in \"" + participant.getActivity().getTitle() + "\" was declined.";
+        NotificationType notificationType = newStatus == ParticipantStatus.ACCEPTED
+                ? NotificationType.PARTICIPANT_ACCEPTED
+                : NotificationType.PARTICIPANT_DECLINED;
+
+        notificationService.createAndSendNotification(
+                participant.getUser(),
+                notificationTitle,
+                notificationMessage,
+                notificationType,
+                participant.getActivity().getId(),
+                updated.getId(),
+                null
+        );
+
         return mapToParticipantResponse(updated);
     }
 
@@ -161,6 +196,18 @@ public class ActivityParticipantService {
 
         participant.setStatus(ParticipantStatus.JOINED);
         ActivityParticipant updated = participantRepository.save(participant);
+
+        // Notify activity creator that participant joined
+        notificationService.createAndSendNotification(
+                participant.getActivity().getCreator(),
+                "Participant Confirmed!",
+                participant.getUser().getFullName() + " has joined \"" + participant.getActivity().getTitle() + "\"",
+                NotificationType.PARTICIPANT_JOINED,
+                participant.getActivity().getId(),
+                updated.getId(),
+                null
+        );
+
         return mapToParticipantResponse(updated);
     }
 
@@ -176,6 +223,17 @@ public class ActivityParticipantService {
 
         participant.setStatus(ParticipantStatus.LEFT);
         participantRepository.save(participant);
+
+        // Notify activity creator that participant left
+        notificationService.createAndSendNotification(
+                participant.getActivity().getCreator(),
+                "Participant Left",
+                participant.getUser().getFullName() + " has left \"" + participant.getActivity().getTitle() + "\"",
+                NotificationType.PARTICIPANT_LEFT,
+                participant.getActivity().getId(),
+                participant.getId(),
+                null
+        );
     }
 
     // Delete interest before acceptance

@@ -4,10 +4,7 @@ import com.gege.activitypartner.dto.ReviewRequest;
 import com.gege.activitypartner.dto.ReviewResponse;
 import com.gege.activitypartner.dto.ReviewUpdateRequest;
 import com.gege.activitypartner.dto.UserSimpleResponse;
-import com.gege.activitypartner.entity.Activity;
-import com.gege.activitypartner.entity.ActivityStatus;
-import com.gege.activitypartner.entity.Review;
-import com.gege.activitypartner.entity.User;
+import com.gege.activitypartner.entity.*;
 import com.gege.activitypartner.exception.DuplicateResourceException;
 import com.gege.activitypartner.exception.InvalidParticipantActionException;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
@@ -29,6 +26,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final ActivityRepository activityRepository;
+    private final NotificationService notificationService;
 
     // Create review
     public ReviewResponse createReview(ReviewRequest request, Long reviewerId) {
@@ -62,6 +60,17 @@ public class ReviewService {
 
         // Recalculate reviewed user's average rating
         updateUserRating(reviewedUser.getId());
+
+        // Notify reviewed user about the new review
+        notificationService.createAndSendNotification(
+                reviewedUser,
+                "New Review Received",
+                reviewer.getFullName() + " left you a " + request.getRating() + "-star review",
+                NotificationType.REVIEW_RECEIVED,
+                request.getActivityId(),
+                null,
+                saved.getId()
+        );
 
         return mapToResponse(saved);
     }
