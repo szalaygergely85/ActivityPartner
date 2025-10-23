@@ -65,7 +65,7 @@ jobs:
             --from-literal=SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
             --dry-run=client -o yaml | kubectl apply -f -
           
-          - name: Create Firebase secret
+         
 
       - name: Create Kubernetes Secret from Firebase credentials
         run: |
