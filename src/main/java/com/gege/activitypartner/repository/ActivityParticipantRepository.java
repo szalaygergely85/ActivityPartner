@@ -68,4 +68,9 @@ public interface ActivityParticipantRepository extends JpaRepository<ActivityPar
            "JOIN FETCH ap.user " +
            "WHERE ap.id = :id")
     Optional<ActivityParticipant> findByIdWithDetails(@Param("id") Long id);
+
+    // Count total application attempts by user for an activity (including withdrawn/declined)
+    @Query("SELECT COUNT(ap) FROM ActivityParticipant ap " +
+           "WHERE ap.activity.id = :activityId AND ap.user.id = :userId")
+    Long countApplicationAttempts(@Param("activityId") Long activityId, @Param("userId") Long userId);
 }

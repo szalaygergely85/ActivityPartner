@@ -36,6 +36,9 @@ public class ActivityParticipant {
     @Column(nullable = false)
     private Boolean isFriend = false;
 
+    @Column(nullable = false)
+    private Integer applicationAttempts = 1;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt;

@@ -55,9 +55,9 @@ public class UserController {
 
     // Register new user
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
-        UserResponse user = userService.registerUser(request);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+    public ResponseEntity<LoginResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request, HttpServletRequest httpRequest) {
+        LoginResponse response = userService.registerUser(request, httpRequest);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // Get user by ID

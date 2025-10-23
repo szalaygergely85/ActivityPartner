@@ -109,7 +109,7 @@ public class UserService {
 
     // Register new user
     @Transactional
-    public UserResponse registerUser(UserRegistrationRequest request) {
+    public LoginResponse registerUser(UserRegistrationRequest request, HttpServletRequest httpRequest) {
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email already registered");
@@ -124,7 +124,24 @@ public class UserService {
         user.setIsActive(true);
 
         User savedUser = userRepository.save(user);
-        return convertToResponse(savedUser);
+
+        // Generate access token
+        String accessToken = jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId());
+
+        // Generate and save refresh token
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser, httpRequest);
+
+        // Return login response with tokens and user info
+        return new LoginResponse(
+                accessToken,
+                refreshToken.getToken(),
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getFullName(),
+                savedUser.getProfileImageUrl(),
+                savedUser.getRating(),
+                savedUser.getBadge()
+        );
     }
 
     // Get user by ID

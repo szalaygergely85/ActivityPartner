@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class ActivityParticipantService {
 
+    private static final int MAX_APPLICATION_ATTEMPTS = 3;
+
     private final ActivityParticipantRepository participantRepository;
     private final ActivityRepository activityRepository;
     private final UserRepository userRepository;
@@ -37,16 +39,67 @@ public class ActivityParticipantService {
         validateInterestRequest(activity, user);
 
         // Check if already participating
-        if (participantRepository.existsByActivityIdAndUserId(activityId, userId)) {
-            throw new DuplicateResourceException("You have already expressed interest in this activity");
+        var existingParticipant = participantRepository.findByActivityIdAndUserId(activityId, userId);
+
+        if (existingParticipant.isPresent()) {
+            ActivityParticipant participant = existingParticipant.get();
+            ParticipantStatus status = participant.getStatus();
+
+            // If active status (INTERESTED, ACCEPTED, JOINED), cannot reapply
+            if (status == ParticipantStatus.INTERESTED ||
+                status == ParticipantStatus.ACCEPTED ||
+                status == ParticipantStatus.JOINED) {
+                throw new DuplicateResourceException("You have already expressed interest in this activity");
+            }
+
+            // If DECLINED, cannot reapply to prevent spam
+            if (status == ParticipantStatus.DECLINED) {
+                throw new InvalidParticipantActionException("Your application was declined. You cannot reapply to this activity.");
+            }
+
+            // If WITHDRAWN or LEFT, can reapply but check attempt limit first
+            Long totalAttempts = participantRepository.countApplicationAttempts(activityId, userId);
+            if (totalAttempts >= MAX_APPLICATION_ATTEMPTS) {
+                throw new InvalidParticipantActionException(
+                        "You have reached the maximum number of application attempts (" + MAX_APPLICATION_ATTEMPTS + ") for this activity"
+                );
+            }
+
+            // Reuse existing record by updating status back to INTERESTED
+            participant.setStatus(ParticipantStatus.INTERESTED);
+            participant.setApplicationAttempts(totalAttempts.intValue() + 1);
+
+            ActivityParticipant saved = participantRepository.save(participant);
+
+            // Notify activity creator about renewed interest
+            notificationService.createAndSendNotification(
+                    activity.getCreator(),
+                    "New Interest in Your Activity",
+                    user.getFullName() + " is interested in \"" + activity.getTitle() + "\"",
+                    NotificationType.PARTICIPANT_INTERESTED,
+                    activity.getId(),
+                    saved.getId(),
+                    null
+            );
+
+            return mapToParticipantResponse(saved);
         }
 
-        // Create new participant
+        // No existing record - check application attempt limit
+        Long totalAttempts = participantRepository.countApplicationAttempts(activityId, userId);
+        if (totalAttempts >= MAX_APPLICATION_ATTEMPTS) {
+            throw new InvalidParticipantActionException(
+                    "You have reached the maximum number of application attempts (" + MAX_APPLICATION_ATTEMPTS + ") for this activity"
+            );
+        }
+
+        // Create new participant record
         ActivityParticipant participant = new ActivityParticipant();
         participant.setActivity(activity);
         participant.setUser(user);
         participant.setStatus(ParticipantStatus.INTERESTED);
         participant.setIsFriend(false); // TODO: Implement friend check logic
+        participant.setApplicationAttempts(totalAttempts.intValue() + 1);
 
         ActivityParticipant saved = participantRepository.save(participant);
 
@@ -216,35 +269,54 @@ public class ActivityParticipantService {
         ActivityParticipant participant = participantRepository.findByActivityIdAndUserId(activityId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Participation not found"));
 
-        // Can only leave if JOINED
-        if (participant.getStatus() != ParticipantStatus.JOINED) {
-            throw new InvalidParticipantActionException("Can only leave activities you have joined");
+        // Handle based on current status
+        if (participant.getStatus() == ParticipantStatus.DECLINED) {
+            throw new InvalidParticipantActionException("Cannot withdraw a declined application");
         }
 
-        participant.setStatus(ParticipantStatus.LEFT);
-        participantRepository.save(participant);
+        if (participant.getStatus() == ParticipantStatus.LEFT ||
+            participant.getStatus() == ParticipantStatus.WITHDRAWN) {
+            throw new InvalidParticipantActionException("You have already left this activity");
+        }
 
-        // Notify activity creator that participant left
-        notificationService.createAndSendNotification(
-                participant.getActivity().getCreator(),
-                "Participant Left",
-                participant.getUser().getFullName() + " has left \"" + participant.getActivity().getTitle() + "\"",
-                NotificationType.PARTICIPANT_LEFT,
-                participant.getActivity().getId(),
-                participant.getId(),
-                null
-        );
+        // For INTERESTED or ACCEPTED, mark as WITHDRAWN
+        if (participant.getStatus() == ParticipantStatus.INTERESTED ||
+            participant.getStatus() == ParticipantStatus.ACCEPTED) {
+            participant.setStatus(ParticipantStatus.WITHDRAWN);
+            participantRepository.save(participant);
+            return;
+        }
+
+        // For JOINED, mark as LEFT and notify creator
+        if (participant.getStatus() == ParticipantStatus.JOINED) {
+            participant.setStatus(ParticipantStatus.LEFT);
+            participantRepository.save(participant);
+
+            // Notify activity creator that participant left
+            notificationService.createAndSendNotification(
+                    participant.getActivity().getCreator(),
+                    "Participant Left",
+                    participant.getUser().getFullName() + " has left \"" + participant.getActivity().getTitle() + "\"",
+                    NotificationType.PARTICIPANT_LEFT,
+                    participant.getActivity().getId(),
+                    participant.getId(),
+                    null
+            );
+            return;
+        }
+
+        throw new InvalidParticipantActionException("Invalid status for leaving activity");
     }
 
-    // Delete interest before acceptance
+    // Delete interest before acceptance (DEPRECATED - use leaveActivity instead)
     public void deleteInterest(Long activityId, Long userId) {
         ActivityParticipant participant = participantRepository.findByActivityIdAndUserId(activityId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interest not found"));
 
-        // Can only delete if INTERESTED or DECLINED
-        if (participant.getStatus() != ParticipantStatus.INTERESTED &&
-            participant.getStatus() != ParticipantStatus.DECLINED) {
-            throw new InvalidParticipantActionException("Can only delete interest before being accepted");
+        // Can only delete if WITHDRAWN (after user withdrew interest)
+        // DECLINED applications cannot be deleted to preserve attempt history
+        if (participant.getStatus() != ParticipantStatus.WITHDRAWN) {
+            throw new InvalidParticipantActionException("Can only delete after withdrawing interest. Use leaveActivity to withdraw.");
         }
 
         participantRepository.delete(participant);
