@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: activity-finder
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: activity-finder
+  template:
+    metadata:
+      labels:
+        app: activity-finder
+    spec:
+      containers:
+        - name: activity-finder
+          image: gery12492/activity-finder:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rest-server-secret
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rest-server-secret
+                  key: SPRING_DATASOURCE_PASSWORD
+          volumeMounts:
+            - name: firebase-credentials
+              mountPath: /app/config/serviceAccountKey.json
+              subPath: serviceAccountKey.json
+              readOnly: true
+            - name: image-storage
+              mountPath: /images
+      volumes:
+        - name: firebase-credentials
+          secret:
+            secretName: firebase-credentials
+        - name: image-storage
+          persistentVolumeClaim:
+            claimName: activity-finder-pvc
