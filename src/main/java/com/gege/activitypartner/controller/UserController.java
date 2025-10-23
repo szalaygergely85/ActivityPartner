@@ -11,10 +11,16 @@ import com.gege.activitypartner.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -116,5 +122,49 @@ public class UserController {
     public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
         userService.deactivateUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Upload profile image
+    @PostMapping("/{id}/profile-image")
+    public ResponseEntity<UserResponse> uploadProfileImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        UserResponse user = userService.updateProfileImage(id, file);
+        return ResponseEntity.ok(user);
+    }
+
+    // Get profile image
+    @GetMapping("/{userId}/profile-image/{fileName:.+}")
+    public ResponseEntity<Resource> getProfileImage(
+            @PathVariable Long userId,
+            @PathVariable String fileName) {
+        try {
+            // Get file storage location from service
+            Path filePath = userService.getFileStorageService().getFileStorageLocation().resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                // Determine content type
+                String contentType = "application/octet-stream";
+                if (fileName.toLowerCase().endsWith(".png")) {
+                    contentType = "image/png";
+                } else if (fileName.toLowerCase().endsWith(".jpg") || fileName.toLowerCase().endsWith(".jpeg")) {
+                    contentType = "image/jpeg";
+                } else if (fileName.toLowerCase().endsWith(".gif")) {
+                    contentType = "image/gif";
+                } else if (fileName.toLowerCase().endsWith(".webp")) {
+                    contentType = "image/webp";
+                }
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

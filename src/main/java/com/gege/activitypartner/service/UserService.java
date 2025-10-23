@@ -15,10 +15,12 @@ import com.gege.activitypartner.exception.DuplicateResourceException;
 import com.gege.activitypartner.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -32,6 +34,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final FileStorageService fileStorageService;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     // Login user
@@ -251,6 +254,37 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // Update profile image
+    @Transactional
+    public UserResponse updateProfileImage(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // Delete old profile image if it exists
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            try {
+                // Extract filename from URL (assumes format: /api/users/{userId}/profile-image/{filename})
+                String oldFileName = user.getProfileImageUrl().substring(user.getProfileImageUrl().lastIndexOf('/') + 1);
+                fileStorageService.deleteFile(oldFileName);
+            } catch (Exception e) {
+                // Log error but continue with upload
+                System.err.println("Failed to delete old profile image: " + e.getMessage());
+            }
+        }
+
+        // Store the new file
+        String fileName = fileStorageService.storeFile(file);
+
+        // Generate URL for the uploaded file
+        String fileUrl = "/api/users/" + userId + "/profile-image/" + fileName;
+
+        // Update user's profile image URL
+        user.setProfileImageUrl(fileUrl);
+        User updatedUser = userRepository.save(user);
+
+        return convertToResponse(updatedUser);
+    }
+
     // Convert User entity to UserResponse DTO
     private UserResponse convertToResponse(User user) {
         UserResponse response = new UserResponse();
@@ -276,5 +310,10 @@ public class UserService {
         response.setRating(user.getRating());
         response.setBadge(user.getBadge());
         return response;
+    }
+
+    // Get FileStorageService (used by controller to serve files)
+    public FileStorageService getFileStorageService() {
+        return fileStorageService;
     }
 }

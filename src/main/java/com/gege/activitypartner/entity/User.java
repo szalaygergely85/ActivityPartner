@@ -34,6 +34,7 @@ public class User {
     @Column(length = 500)
     private String bio;
 
+    @Column(length = 1000)
     private String profileImageUrl;
 
     @Column(nullable = false)
