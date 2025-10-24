@@ -134,10 +134,8 @@ public class UserController {
     }
 
     // Get profile image
-    @GetMapping("/{userId}/profile-image/{fileName:.+}")
-    public ResponseEntity<Resource> getProfileImage(
-            @PathVariable Long userId,
-            @PathVariable String fileName) {
+    @GetMapping("/images/{fileName:.+}")
+    public ResponseEntity<Resource> getProfileImage(@PathVariable String fileName) {
         try {
             // Get file storage location from service
             Path filePath = userService.getFileStorageService().getFileStorageLocation().resolve(fileName).normalize();

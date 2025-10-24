@@ -263,7 +263,7 @@ public class UserService {
         // Delete old profile image if it exists
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
             try {
-                // Extract filename from URL (assumes format: /api/users/{userId}/profile-image/{filename})
+                // Extract filename from URL (assumes format: /api/users/images/{filename})
                 String oldFileName = user.getProfileImageUrl().substring(user.getProfileImageUrl().lastIndexOf('/') + 1);
                 fileStorageService.deleteFile(oldFileName);
             } catch (Exception e) {
@@ -276,7 +276,7 @@ public class UserService {
         String fileName = fileStorageService.storeFile(file);
 
         // Generate URL for the uploaded file
-        String fileUrl = "/api/users/" + userId + "/profile-image/" + fileName;
+        String fileUrl = "/api/users/images/" + fileName;
 
         // Update user's profile image URL
         user.setProfileImageUrl(fileUrl);
