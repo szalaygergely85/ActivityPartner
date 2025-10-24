@@ -81,7 +81,7 @@ jobs:
           kubectl apply -f k8s/ -n default
 
           # Update image to latest version
-          kubectl set image deployment/activity-finder activity-finder=***/activity-finder:latest -n default
+          kubectl set image deployment/activity-finder activity-finder=gery12492/activity-finder:latest -n default
 
           # Restart rollout to pick up any changes
           kubectl rollout restart deployment/activity-finder -n default
