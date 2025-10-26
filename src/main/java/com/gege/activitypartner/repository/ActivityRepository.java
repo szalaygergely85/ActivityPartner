@@ -43,4 +43,7 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     // Find free activities (cost = 0)
     List<Activity> findByCost(Double cost);
+
+    // Find expired activities (activities with past activityDate and OPEN status)
+    List<Activity> findByStatusAndActivityDateBefore(ActivityStatus status, LocalDateTime date);
 }

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,9 +23,9 @@ public class CategoryController {
 
     // Create new category (admin)
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(
             @Valid @RequestBody CategoryRequest request) {
-        // TODO: Add admin authorization check
         CategoryResponse response = categoryService.createCategory(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -52,18 +53,18 @@ public class CategoryController {
 
     // Update category (admin)
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> updateCategory(
             @PathVariable Long id,
             @Valid @RequestBody CategoryUpdateRequest request) {
-        // TODO: Add admin authorization check
         CategoryResponse response = categoryService.updateCategory(id, request);
         return ResponseEntity.ok(response);
     }
 
     // Deactivate category (admin) - soft delete
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deactivateCategory(@PathVariable Long id) {
-        // TODO: Add admin authorization check
         categoryService.deactivateCategory(id);
         return ResponseEntity.noContent().build();
     }

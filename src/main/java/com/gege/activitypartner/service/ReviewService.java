@@ -161,9 +161,10 @@ public class ReviewService {
             throw new InvalidParticipantActionException("Cannot review yourself");
         }
 
-        // Activity must be completed
-        if (activity.getStatus() != ActivityStatus.COMPLETED) {
-            throw new InvalidParticipantActionException("Can only review after activity is completed");
+        // Activity must be completed or cancelled (allow reviews for activities that ended)
+        // Note: Activities may not be marked as COMPLETED automatically, so we allow CANCELLED status as well
+        if (activity.getStatus() != ActivityStatus.COMPLETED && activity.getStatus() != ActivityStatus.CANCELLED) {
+            throw new InvalidParticipantActionException("Can only review after activity is completed or cancelled");
         }
     }
 

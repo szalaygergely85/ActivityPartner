@@ -4,6 +4,7 @@ import com.gege.activitypartner.config.SecurityContextUtil;
 import com.gege.activitypartner.dto.ActivityRequestDTO;
 import com.gege.activitypartner.dto.ActivityResponseDTO;
 import com.gege.activitypartner.dto.ActivityUpdateDTO;
+import com.gege.activitypartner.entity.ActivityStatus;
 import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ActivityService;
@@ -55,6 +56,18 @@ public class ActivityController {
     @GetMapping("/creator/{creatorId}")
     public ResponseEntity<List<ActivityResponseDTO>> getActivitiesByCreator(@PathVariable Long creatorId) {
         List<ActivityResponseDTO> activities = activityService.getActivitiesByCreator(creatorId);
+        return ResponseEntity.ok(activities);
+    }
+
+    // Get my activities (current user) with optional status filter
+    @GetMapping("/my-activities")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ActivityResponseDTO>> getMyActivities(
+            @RequestParam(required = false) ActivityStatus status) {
+        String email = securityContextUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<ActivityResponseDTO> activities = activityService.getMyActivities(user.getId(), status);
         return ResponseEntity.ok(activities);
     }
 

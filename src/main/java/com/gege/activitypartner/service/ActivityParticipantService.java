@@ -98,7 +98,9 @@ public class ActivityParticipantService {
         participant.setActivity(activity);
         participant.setUser(user);
         participant.setStatus(ParticipantStatus.INTERESTED);
-        participant.setIsFriend(false); // TODO: Implement friend check logic
+        // Check if users have participated in activities together previously
+        boolean areFriends = checkIfFriends(activity.getCreator(), user);
+        participant.setIsFriend(areFriends);
         participant.setApplicationAttempts(totalAttempts.intValue() + 1);
 
         ActivityParticipant saved = participantRepository.save(participant);
@@ -320,6 +322,31 @@ public class ActivityParticipantService {
         }
 
         participantRepository.delete(participant);
+    }
+
+    // Check if two users have participated in completed activities together
+    private boolean checkIfFriends(User user1, User user2) {
+        // Query for activities where both users have joined status in completed activities
+        // If they've participated together in at least one completed activity, consider them friends
+        List<ActivityParticipant> user1Activities = participantRepository.findByUserIdAndStatus(
+                user1.getId(), ParticipantStatus.JOINED
+        );
+
+        for (ActivityParticipant participant : user1Activities) {
+            // Check if this activity is completed and user2 also participated
+            if (participant.getActivity().getStatus() == ActivityStatus.COMPLETED) {
+                boolean user2Participated = participantRepository
+                        .findByActivityIdAndUserId(participant.getActivity().getId(), user2.getId())
+                        .map(p -> p.getStatus() == ParticipantStatus.JOINED)
+                        .orElse(false);
+
+                if (user2Participated) {
+                    return true; // They've been in a completed activity together
+                }
+            }
+        }
+
+        return false;
     }
 
     // Validation helpers

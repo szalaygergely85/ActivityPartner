@@ -74,6 +74,24 @@ public class ActivityService {
                 .collect(Collectors.toList());
     }
 
+    // Get my activities (current user) filtered by status
+    @Transactional(readOnly = true)
+    public List<ActivityResponseDTO> getMyActivities(Long creatorId, ActivityStatus status) {
+        List<Activity> activities;
+        if (status == null) {
+            // Return all activities if no status filter
+            activities = activityRepository.findByCreatorId(creatorId);
+        } else {
+            // Return activities filtered by status
+            activities = activityRepository.findByCreatorId(creatorId).stream()
+                    .filter(a -> a.getStatus() == status)
+                    .collect(Collectors.toList());
+        }
+        return activities.stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // Get activities by category
     @Transactional(readOnly = true)
     public List<ActivityResponseDTO> getActivitiesByCategory(String category) {
