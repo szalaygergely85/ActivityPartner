@@ -126,11 +126,11 @@ public class UserController {
 
     // Upload profile image
     @PostMapping("/{id}/profile-image")
-    public ResponseEntity<UserResponse> uploadProfileImage(
+    public ResponseEntity<String> uploadProfileImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
-        UserResponse user = userService.updateProfileImage(id, file);
-        return ResponseEntity.ok(user);
+        String imageUrl = userService.updateProfileImage(id, file);
+        return ResponseEntity.ok(imageUrl);
     }
 
     // Get profile image

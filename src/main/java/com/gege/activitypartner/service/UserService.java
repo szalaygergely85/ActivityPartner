@@ -256,7 +256,7 @@ public class UserService {
 
     // Update profile image
     @Transactional
-    public UserResponse updateProfileImage(Long userId, MultipartFile file) {
+    public String updateProfileImage(Long userId, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -280,9 +280,10 @@ public class UserService {
 
         // Update user's profile image URL
         user.setProfileImageUrl(fileUrl);
-        User updatedUser = userRepository.save(user);
+        userRepository.save(user);
 
-        return convertToResponse(updatedUser);
+        // Return only the URL string
+        return fileUrl;
     }
 
     // Convert User entity to UserResponse DTO
