@@ -30,10 +30,8 @@ public class ReviewController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ReviewResponse response = reviewService.createReview(request, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ReviewResponse response = reviewService.createReview(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -64,10 +62,8 @@ public class ReviewController {
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long id,
             @Valid @RequestBody ReviewUpdateRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ReviewResponse response = reviewService.updateReview(id, request, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ReviewResponse response = reviewService.updateReview(id, request, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -75,10 +71,8 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        reviewService.deleteReview(id, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        reviewService.deleteReview(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

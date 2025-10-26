@@ -4,8 +4,6 @@ import com.gege.activitypartner.config.SecurityContextUtil;
 import com.gege.activitypartner.dto.DeviceTokenRequest;
 import com.gege.activitypartner.dto.NotificationPreferenceRequest;
 import com.gege.activitypartner.dto.NotificationResponse;
-import com.gege.activitypartner.entity.User;
-import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +22,14 @@ public class NotificationController {
 
     private final NotificationService notificationService;
     private final SecurityContextUtil securityContextUtil;
-    private final UserRepository userRepository;
 
     // Register/Update FCM device token
     @PostMapping("/device-token")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> registerDeviceToken(@Valid @RequestBody DeviceTokenRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        notificationService.updateFcmToken(user.getId(), request.getFcmToken());
+        notificationService.updateFcmToken(userId, request.getFcmToken());
         return ResponseEntity.ok(Map.of("message", "Device token registered successfully"));
     }
 
@@ -43,11 +38,9 @@ public class NotificationController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> updateNotificationPreferences(
             @Valid @RequestBody NotificationPreferenceRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        notificationService.updateNotificationPreference(user.getId(), request.getNotificationsEnabled());
+        notificationService.updateNotificationPreference(userId, request.getNotificationsEnabled());
         return ResponseEntity.ok(Map.of(
                 "message", "Notification preferences updated",
                 "notificationsEnabled", request.getNotificationsEnabled().toString()
@@ -58,11 +51,9 @@ public class NotificationController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NotificationResponse>> getMyNotifications() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        List<NotificationResponse> notifications = notificationService.getUserNotifications(user.getId());
+        List<NotificationResponse> notifications = notificationService.getUserNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
 
@@ -70,11 +61,9 @@ public class NotificationController {
     @GetMapping("/unread")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NotificationResponse>> getUnreadNotifications() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        List<NotificationResponse> notifications = notificationService.getUnreadNotifications(user.getId());
+        List<NotificationResponse> notifications = notificationService.getUnreadNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
 
@@ -82,11 +71,9 @@ public class NotificationController {
     @GetMapping("/unread/count")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Long>> getUnreadCount() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        Long count = notificationService.getUnreadCount(user.getId());
+        Long count = notificationService.getUnreadCount(userId);
         return ResponseEntity.ok(Map.of("unreadCount", count));
     }
 
@@ -94,11 +81,9 @@ public class NotificationController {
     @PatchMapping("/{id}/read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> markAsRead(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        notificationService.markAsRead(id, user.getId());
+        notificationService.markAsRead(id, userId);
         return ResponseEntity.ok(Map.of("message", "Notification marked as read"));
     }
 
@@ -106,11 +91,9 @@ public class NotificationController {
     @PatchMapping("/read-all")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> markAllAsRead() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        notificationService.markAllAsRead(user.getId());
+        notificationService.markAllAsRead(userId);
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
 
@@ -118,11 +101,9 @@ public class NotificationController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        notificationService.deleteNotification(id, user.getId());
+        notificationService.deleteNotification(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

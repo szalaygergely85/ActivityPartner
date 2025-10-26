@@ -3,8 +3,6 @@ package com.gege.activitypartner.controller;
 import com.gege.activitypartner.config.SecurityContextUtil;
 import com.gege.activitypartner.dto.ActivityMessageRequest;
 import com.gege.activitypartner.dto.ActivityMessageResponse;
-import com.gege.activitypartner.entity.User;
-import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ActivityMessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,6 @@ public class ActivityMessageController {
 
     private final ActivityMessageService messageService;
     private final SecurityContextUtil securityContextUtil;
-    private final UserRepository userRepository;
 
     /**
      * Send a message in activity chat
@@ -38,11 +35,9 @@ public class ActivityMessageController {
             @PathVariable Long activityId,
             @Valid @RequestBody ActivityMessageRequest request) {
 
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        ActivityMessageResponse response = messageService.sendMessage(activityId, user.getId(), request);
+        ActivityMessageResponse response = messageService.sendMessage(activityId, userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -53,11 +48,9 @@ public class ActivityMessageController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ActivityMessageResponse>> getMessages(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        List<ActivityMessageResponse> messages = messageService.getActivityMessages(activityId, user.getId());
+        List<ActivityMessageResponse> messages = messageService.getActivityMessages(activityId, userId);
         return ResponseEntity.ok(messages);
     }
 
@@ -71,11 +64,9 @@ public class ActivityMessageController {
             @PathVariable Long activityId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp) {
 
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        List<ActivityMessageResponse> messages = messageService.getMessagesSince(activityId, user.getId(), timestamp);
+        List<ActivityMessageResponse> messages = messageService.getMessagesSince(activityId, userId, timestamp);
         return ResponseEntity.ok(messages);
     }
 
@@ -86,11 +77,9 @@ public class ActivityMessageController {
     @GetMapping("/count")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Long>> getMessageCount(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        Long count = messageService.getMessageCount(activityId, user.getId());
+        Long count = messageService.getMessageCount(activityId, userId);
         return ResponseEntity.ok(Map.of("messageCount", count));
     }
 
@@ -104,11 +93,9 @@ public class ActivityMessageController {
             @PathVariable Long activityId,
             @PathVariable Long messageId) {
 
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        messageService.deleteMessage(messageId, user.getId());
+        messageService.deleteMessage(messageId, userId);
         return ResponseEntity.ok(Map.of("message", "Message deleted successfully"));
     }
 }

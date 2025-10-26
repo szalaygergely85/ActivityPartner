@@ -5,8 +5,6 @@ import com.gege.activitypartner.dto.ParticipantActivityResponse;
 import com.gege.activitypartner.dto.ParticipantResponse;
 import com.gege.activitypartner.dto.UpdateParticipantStatusRequest;
 import com.gege.activitypartner.entity.ParticipantStatus;
-import com.gege.activitypartner.entity.User;
-import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ActivityParticipantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,16 +23,13 @@ public class ActivityParticipantController {
 
     private final ActivityParticipantService participantService;
     private final SecurityContextUtil securityContextUtil;
-    private final UserRepository userRepository;
 
     // Express interest in an activity
     @PostMapping("/activities/{activityId}/interest")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ParticipantResponse> expressInterest(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ParticipantResponse response = participantService.expressInterest(activityId, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ParticipantResponse response = participantService.expressInterest(activityId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -50,10 +45,8 @@ public class ActivityParticipantController {
     @GetMapping("/activities/{activityId}/interested")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ParticipantResponse>> getInterestedUsers(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        List<ParticipantResponse> interested = participantService.getInterestedUsers(activityId, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        List<ParticipantResponse> interested = participantService.getInterestedUsers(activityId, userId);
         return ResponseEntity.ok(interested);
     }
 
@@ -61,10 +54,8 @@ public class ActivityParticipantController {
     @GetMapping("/my-participations")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ParticipantActivityResponse>> getMyParticipations() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        List<ParticipantActivityResponse> participations = participantService.getMyParticipations(user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        List<ParticipantActivityResponse> participations = participantService.getMyParticipations(userId);
         return ResponseEntity.ok(participations);
     }
 
@@ -73,10 +64,8 @@ public class ActivityParticipantController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ParticipantActivityResponse>> getMyParticipationsByStatus(
             @PathVariable ParticipantStatus status) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        List<ParticipantActivityResponse> participations = participantService.getMyParticipationsByStatus(user.getId(), status);
+        Long userId = securityContextUtil.getCurrentUserId();
+        List<ParticipantActivityResponse> participations = participantService.getMyParticipationsByStatus(userId, status);
         return ResponseEntity.ok(participations);
     }
 
@@ -86,11 +75,9 @@ public class ActivityParticipantController {
     public ResponseEntity<ParticipantResponse> updateParticipantStatus(
             @PathVariable Long participantId,
             @Valid @RequestBody UpdateParticipantStatusRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
         ParticipantResponse response = participantService.updateParticipantStatus(
-                participantId, request.getStatus(), user.getId());
+                participantId, request.getStatus(), userId);
         return ResponseEntity.ok(response);
     }
 
@@ -98,10 +85,8 @@ public class ActivityParticipantController {
     @PostMapping("/{participantId}/confirm")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ParticipantResponse> confirmJoining(@PathVariable Long participantId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ParticipantResponse response = participantService.confirmJoining(participantId, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ParticipantResponse response = participantService.confirmJoining(participantId, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -109,10 +94,8 @@ public class ActivityParticipantController {
     @DeleteMapping("/activities/{activityId}/leave")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> leaveActivity(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        participantService.leaveActivity(activityId, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        participantService.leaveActivity(activityId, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -120,10 +103,8 @@ public class ActivityParticipantController {
     @DeleteMapping("/activities/{activityId}/interest")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteInterest(@PathVariable Long activityId) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        participantService.deleteInterest(activityId, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        participantService.deleteInterest(activityId, userId);
         return ResponseEntity.noContent().build();
     }
 }

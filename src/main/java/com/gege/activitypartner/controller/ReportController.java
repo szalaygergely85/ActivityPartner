@@ -5,8 +5,6 @@ import com.gege.activitypartner.dto.ReportRequest;
 import com.gege.activitypartner.dto.ReportResponse;
 import com.gege.activitypartner.entity.ReportStatus;
 import com.gege.activitypartner.entity.ReportType;
-import com.gege.activitypartner.entity.User;
-import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,6 @@ public class ReportController {
 
     private final ReportService reportService;
     private final SecurityContextUtil securityContextUtil;
-    private final UserRepository userRepository;
 
     /**
      * Submit a new report
@@ -35,11 +32,9 @@ public class ReportController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReportResponse> submitReport(@Valid @RequestBody ReportRequest request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        ReportResponse response = reportService.submitReport(user.getId(), request);
+        ReportResponse response = reportService.submitReport(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -50,11 +45,9 @@ public class ReportController {
     @GetMapping("/my-reports")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ReportResponse>> getMyReports() {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long userId = securityContextUtil.getCurrentUserId();
 
-        List<ReportResponse> reports = reportService.getMyReports(user.getId());
+        List<ReportResponse> reports = reportService.getMyReports(userId);
         return ResponseEntity.ok(reports);
     }
 

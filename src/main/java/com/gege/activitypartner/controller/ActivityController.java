@@ -31,10 +31,8 @@ public class ActivityController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ActivityResponseDTO> createActivity(@Valid @RequestBody ActivityRequestDTO request) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ActivityResponseDTO response = activityService.createActivity(request, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ActivityResponseDTO response = activityService.createActivity(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -98,10 +96,8 @@ public class ActivityController {
     public ResponseEntity<ActivityResponseDTO> updateActivity(
             @PathVariable Long id,
             @Valid @RequestBody ActivityUpdateDTO updateDTO) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ActivityResponseDTO response = activityService.updateActivity(id, updateDTO, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ActivityResponseDTO response = activityService.updateActivity(id, updateDTO, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -109,10 +105,8 @@ public class ActivityController {
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ActivityResponseDTO> cancelActivity(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ActivityResponseDTO response = activityService.cancelActivity(id, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ActivityResponseDTO response = activityService.cancelActivity(id, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -120,10 +114,8 @@ public class ActivityController {
     @PatchMapping("/{id}/complete")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ActivityResponseDTO> completeActivity(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        ActivityResponseDTO response = activityService.completeActivity(id, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        ActivityResponseDTO response = activityService.completeActivity(id, userId);
         return ResponseEntity.ok(response);
     }
 
@@ -131,10 +123,8 @@ public class ActivityController {
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteActivity(@PathVariable Long id) {
-        String email = securityContextUtil.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        activityService.deleteActivity(id, user.getId());
+        Long userId = securityContextUtil.getCurrentUserId();
+        activityService.deleteActivity(id, userId);
         return ResponseEntity.noContent().build();
     }
 }
