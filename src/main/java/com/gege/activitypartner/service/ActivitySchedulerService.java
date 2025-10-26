@@ -29,14 +29,7 @@ public class ActivitySchedulerService {
      * This cron job addresses the issue where activities don't automatically transition to COMPLETED
      * status after their scheduled time expires.
      *
-     * Cron expression breakdown: "0 */5 * * * ?"
-     * - 0: seconds (0)
-     * - */5: every 5 minutes
-     * - *: every hour
-     * - *: every day of month
-     * - *: every month
-     * - ?: day of week (ignored)
-     */
+   */
     @Scheduled(cron = "0 */5 * * * ?")
     @Transactional
     public void markExpiredActivitiesAsCompleted() {
@@ -101,19 +94,21 @@ public class ActivitySchedulerService {
      */
     private void sendActivityCompletedNotifications(Activity activity) {
         try {
-            for (ActivityParticipant participant : activity.getParticipants()) {
-                // Send notification to the activity creator
-                notificationService.createAndSendNotification(
-                        activity.getCreator(),
-                        "Activity Completed",
-                        "Your activity \"" + activity.getTitle() + "\" has been marked as completed. Thank you for organizing!",
-                        NotificationType.ACTIVITY_COMPLETED,
-                        activity.getId(),
-                        null,
-                        null
-                );
+            // Send ONE notification to the activity creator with combined message
+            notificationService.createAndSendNotification(
+                    activity.getCreator(),
+                    "Activity Completed",
+                    "Your activity \"" + activity.getTitle() + "\" has been marked as completed. Thank you for organizing! Don't forget to leave reviews for your participants.",
+                    NotificationType.ACTIVITY_COMPLETED,
+                    activity.getId(),
+                    null,
+                    null
+            );
+            log.debug("Sent activity completion notification to creator: {} for activity: {}",
+                    activity.getCreator().getId(), activity.getId());
 
-                // Send notification to each participant to leave reviews
+            // Send notification to each participant to leave reviews
+            for (ActivityParticipant participant : activity.getParticipants()) {
                 notificationService.createAndSendNotification(
                         participant.getUser(),
                         "Activity Completed - Leave a Review",
@@ -124,11 +119,11 @@ public class ActivitySchedulerService {
                         null
                 );
 
-                log.debug("Sent activity completion notification to user: {} for activity: {}",
+                log.debug("Sent activity completion notification to participant: {} for activity: {}",
                         participant.getUser().getId(), activity.getId());
             }
 
-            log.info("Successfully sent completion notifications for activity: {} to {} participants",
+            log.info("Successfully sent completion notifications for activity: {} to creator + {} participants",
                     activity.getId(), activity.getParticipants().size());
         } catch (Exception e) {
             log.error("Error sending activity completion notifications for activity ID: {}", activity.getId(), e);

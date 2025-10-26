@@ -420,9 +420,16 @@ public class ActivityParticipantService {
         dto.setDifficulty(activity.getDifficulty());
         dto.setCost(activity.getCost());
         dto.setMinAge(activity.getMinAge());
-        dto.setCreatorId(activity.getCreator().getId());
-        dto.setCreatorName(activity.getCreator().getFullName());
-        dto.setCreatorImageUrl(activity.getCreator().getProfileImageUrl());
+
+        // Map creator user object
+        UserSimpleResponse creatorResponse = new UserSimpleResponse();
+        creatorResponse.setId(activity.getCreator().getId());
+        creatorResponse.setFullName(activity.getCreator().getFullName());
+        creatorResponse.setProfileImageUrl(activity.getCreator().getProfileImageUrl());
+        creatorResponse.setRating(activity.getCreator().getRating());
+        creatorResponse.setBadge(activity.getCreator().getBadge());
+        dto.setCreator(creatorResponse);
+
         dto.setParticipantsCount(activity.getParticipants().size());
         dto.setCreatedAt(activity.getCreatedAt());
         dto.setUpdatedAt(activity.getUpdatedAt());

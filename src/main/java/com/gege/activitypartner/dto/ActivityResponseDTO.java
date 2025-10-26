@@ -35,9 +35,7 @@ public class ActivityResponseDTO {
     private Integer minAge;
 
     // Creator Info
-    private Long creatorId;
-    private String creatorName;
-    private String creatorImageUrl;
+    private UserSimpleResponse creator;
 
     // Participants count
     private Integer participantsCount;
