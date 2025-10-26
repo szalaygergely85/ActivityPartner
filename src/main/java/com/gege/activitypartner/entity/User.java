@@ -37,6 +37,9 @@ public class User {
     @Column(length = 1000)
     private String profileImageUrl;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPhoto> photos = new ArrayList<>(); // All user photos (up to 6)
+
     @Column(nullable = false)
     private Double rating = 0.0; // Average rating from reviews
 

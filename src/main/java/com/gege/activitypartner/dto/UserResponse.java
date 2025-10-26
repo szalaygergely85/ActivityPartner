@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,5 +21,6 @@ public class UserResponse {
     private Integer completedActivities;
     private List<String> interests;
     private String badge;
+    private List<UserPhotoResponse> photos = new ArrayList<>(); // User's photos (up to 6)
     private String createdAt;
 }

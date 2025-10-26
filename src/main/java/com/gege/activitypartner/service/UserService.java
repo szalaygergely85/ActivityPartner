@@ -8,6 +8,7 @@ import com.gege.activitypartner.dto.UserProfileUpdateRequest;
 import com.gege.activitypartner.dto.UserRegistrationRequest;
 import com.gege.activitypartner.dto.UserResponse;
 import com.gege.activitypartner.dto.UserSimpleResponse;
+import com.gege.activitypartner.dto.UserPhotoResponse;
 import com.gege.activitypartner.entity.RefreshToken;
 import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
@@ -298,6 +299,22 @@ public class UserService {
         response.setCompletedActivities(user.getCompletedActivities());
         response.setInterests(user.getInterests());
         response.setBadge(user.getBadge());
+
+        // Map photos if they exist
+        if (user.getPhotos() != null && !user.getPhotos().isEmpty()) {
+            response.setPhotos(user.getPhotos().stream()
+                    .map(photo -> {
+                        UserPhotoResponse photoResponse = new UserPhotoResponse();
+                        photoResponse.setId(photo.getId());
+                        photoResponse.setPhotoUrl(photo.getPhotoUrl());
+                        photoResponse.setIsProfilePicture(photo.getIsProfilePicture());
+                        photoResponse.setDisplayOrder(photo.getDisplayOrder());
+                        photoResponse.setUploadedAt(photo.getUploadedAt());
+                        return photoResponse;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
         response.setCreatedAt(user.getCreatedAt().format(DATE_FORMATTER));
         return response;
     }

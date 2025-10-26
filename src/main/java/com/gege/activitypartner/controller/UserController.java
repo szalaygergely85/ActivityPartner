@@ -126,11 +126,12 @@ public class UserController {
 
     // Upload profile image
     @PostMapping("/{id}/profile-image")
-    public ResponseEntity<String> uploadProfileImage(
+    public ResponseEntity<com.gege.activitypartner.dto.ImageUploadResponse> uploadProfileImage(
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
         String imageUrl = userService.updateProfileImage(id, file);
-        return ResponseEntity.ok(imageUrl);
+        com.gege.activitypartner.dto.ImageUploadResponse response = new com.gege.activitypartner.dto.ImageUploadResponse(imageUrl);
+        return ResponseEntity.ok(response);
     }
 
     // Get profile image
