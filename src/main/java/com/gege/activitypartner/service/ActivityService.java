@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ public class ActivityService {
         activity.setDescription(request.getDescription());
         activity.setActivityDate(request.getActivityDate());
         activity.setLocation(request.getLocation());
+        activity.setLatitude(request.getLatitude() != null ? BigDecimal.valueOf(request.getLatitude()) : null);
+        activity.setLongitude(request.getLongitude() != null ? BigDecimal.valueOf(request.getLongitude()) : null);
         activity.setCategory(request.getCategory());
         activity.setTotalSpots(request.getTotalSpots());
         activity.setReservedForFriendsSpots(request.getReservedForFriendsSpots());
@@ -117,6 +120,31 @@ public class ActivityService {
                 .collect(Collectors.toList());
     }
 
+    // Get nearby activities within radius
+    @Transactional(readOnly = true)
+    public List<ActivityResponseDTO> getNearbyActivities(Double userLatitude, Double userLongitude, Double radiusKm) {
+        List<Activity> allActivities = activityRepository.findAll();
+
+        return allActivities.stream()
+                .filter(activity -> activity.getLatitude() != null && activity.getLongitude() != null)
+                .filter(activity -> calculateDistance(userLatitude, userLongitude, activity.getLatitude(), activity.getLongitude()) <= radiusKm)
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Haversine formula to calculate distance between two geographic points
+    private Double calculateDistance(Double lat1, Double lon1, BigDecimal lat2, BigDecimal lon2) {
+        final int EARTH_RADIUS = 6371; // Earth's radius in kilometers
+
+        Double dLat = Math.toRadians(lat2.doubleValue() - lat1);
+        Double dLon = Math.toRadians(lon2.doubleValue() - lon1);
+        Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2.doubleValue())) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS * c;
+    }
+
     // Update activity
     public ActivityResponseDTO updateActivity(Long id, ActivityUpdateDTO updateDTO, Long userId) {
         Activity activity = activityRepository.findById(id)
@@ -139,6 +167,12 @@ public class ActivityService {
         }
         if (updateDTO.getLocation() != null) {
             activity.setLocation(updateDTO.getLocation());
+        }
+        if (updateDTO.getLatitude() != null) {
+            activity.setLatitude(BigDecimal.valueOf(updateDTO.getLatitude()));
+        }
+        if (updateDTO.getLongitude() != null) {
+            activity.setLongitude(BigDecimal.valueOf(updateDTO.getLongitude()));
         }
         if (updateDTO.getCategory() != null) {
             activity.setCategory(updateDTO.getCategory());
@@ -217,6 +251,8 @@ public class ActivityService {
         dto.setDescription(activity.getDescription());
         dto.setActivityDate(activity.getActivityDate());
         dto.setLocation(activity.getLocation());
+        dto.setLatitude(activity.getLatitude() != null ? activity.getLatitude().doubleValue() : null);
+        dto.setLongitude(activity.getLongitude() != null ? activity.getLongitude().doubleValue() : null);
         dto.setCategory(activity.getCategory());
         dto.setTotalSpots(activity.getTotalSpots());
         dto.setAvailableSpots(activity.getAvailableSpots());

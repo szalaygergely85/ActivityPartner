@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -177,9 +178,24 @@ public class UserService {
         if (request.getProfileImageUrl() != null) {
             user.setProfileImageUrl(request.getProfileImageUrl());
         }
+        if (request.getCity() != null) {
+            user.setCity(request.getCity());
+        }
         if (request.getInterests() != null) {
             user.setInterests(request.getInterests());
         }
+
+        User updatedUser = userRepository.save(user);
+        return convertToResponse(updatedUser);
+    }
+
+    // Update user location (city name only)
+    @Transactional
+    public UserResponse updateUserLocation(Long id, String city) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+
+        user.setCity(city);
 
         User updatedUser = userRepository.save(user);
         return convertToResponse(updatedUser);
@@ -297,6 +313,7 @@ public class UserService {
         response.setProfileImageUrl(user.getProfileImageUrl());
         response.setRating(user.getRating());
         response.setCompletedActivities(user.getCompletedActivities());
+        response.setCity(user.getCity());
         response.setInterests(user.getInterests());
         response.setBadge(user.getBadge());
 

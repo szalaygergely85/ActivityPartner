@@ -89,6 +89,15 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // Update user location
+    @PatchMapping("/{id}/location")
+    public ResponseEntity<UserResponse> updateUserLocation(
+            @PathVariable Long id,
+            @RequestParam String city) {
+        UserResponse user = userService.updateUserLocation(id, city);
+        return ResponseEntity.ok(user);
+    }
+
     // Get all active users
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllActiveUsers() {

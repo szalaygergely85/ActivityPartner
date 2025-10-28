@@ -19,5 +19,7 @@ public class UserProfileUpdateRequest {
 
     private String profileImageUrl;
 
+    private String city;
+
     private List<String> interests;
 }

@@ -17,6 +17,8 @@ public class ActivityResponseDTO {
     private String description;
     private LocalDateTime activityDate;
     private String location;
+    private Double latitude; // Geographic latitude
+    private Double longitude; // Geographic longitude
     private String category;
 
     // Spots Management

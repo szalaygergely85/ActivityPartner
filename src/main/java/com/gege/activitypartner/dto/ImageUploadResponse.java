@@ -1,12 +1,12 @@
-package com.gege.activitypartner.dto;
+    package com.gege.activitypartner.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+    import lombok.AllArgsConstructor;
+    import lombok.Data;
+    import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ImageUploadResponse {
-    private String url;
-}
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class ImageUploadResponse {
+        private String url;
+    }

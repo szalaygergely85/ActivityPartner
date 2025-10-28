@@ -19,6 +19,7 @@ public class UserResponse {
     private String profileImageUrl;
     private Double rating;
     private Integer completedActivities;
+    private String city; // User's city name
     private List<String> interests;
     private String badge;
     private List<UserPhotoResponse> photos = new ArrayList<>(); // User's photos (up to 6)

@@ -90,6 +90,16 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
+    // Get nearby activities within radius
+    @GetMapping("/nearby")
+    public ResponseEntity<List<ActivityResponseDTO>> getNearbyActivities(
+            @RequestParam Double latitude,
+            @RequestParam Double longitude,
+            @RequestParam(defaultValue = "10.0") Double radiusKm) {
+        List<ActivityResponseDTO> activities = activityService.getNearbyActivities(latitude, longitude, radiusKm);
+        return ResponseEntity.ok(activities);
+    }
+
     // Update activity
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")

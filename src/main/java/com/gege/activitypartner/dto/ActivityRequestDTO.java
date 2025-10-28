@@ -26,6 +26,14 @@ public class ActivityRequestDTO {
     @NotBlank(message = "Location is required")
     private String location;
 
+    @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
+    @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
+    private Double latitude; // Geographic latitude from Google Maps
+
+    @DecimalMin(value = "-180.0", message = "Longitude must be between -180 and 180")
+    @DecimalMax(value = "180.0", message = "Longitude must be between -180 and 180")
+    private Double longitude; // Geographic longitude from Google Maps
+
     @NotBlank(message = "Category is required")
     private String category;
 

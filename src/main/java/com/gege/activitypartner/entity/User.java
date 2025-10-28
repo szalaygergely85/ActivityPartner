@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,9 @@ public class User {
 
     @Column(length = 1000)
     private String profileImageUrl;
+
+    @Column(length = 100)
+    private String city; // User's city name (for autocomplete search)
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPhoto> photos = new ArrayList<>(); // All user photos (up to 6)

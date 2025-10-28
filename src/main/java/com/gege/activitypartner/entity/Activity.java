@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,12 @@ public class Activity {
 
     @Column(nullable = false)
     private String location;
+
+    @Column(precision = 10, scale = 8)
+    private BigDecimal latitude; // Geographic latitude
+
+    @Column(precision = 10, scale = 8)
+    private BigDecimal longitude; // Geographic longitude
 
     @Column(nullable = false)
     private String category; // "Hiking", "Coffee", "Sports", etc.
