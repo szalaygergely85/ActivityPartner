@@ -10,6 +10,7 @@ import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
 import com.gege.activitypartner.repository.ActivityRepository;
 import com.gege.activitypartner.repository.UserRepository;
+import com.gege.activitypartner.util.DistanceCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -127,22 +128,17 @@ public class ActivityService {
 
         return allActivities.stream()
                 .filter(activity -> activity.getLatitude() != null && activity.getLongitude() != null)
-                .filter(activity -> calculateDistance(userLatitude, userLongitude, activity.getLatitude(), activity.getLongitude()) <= radiusKm)
+                .filter(activity -> {
+                    double distance = DistanceCalculator.calculateDistance(
+                        BigDecimal.valueOf(userLatitude),
+                        BigDecimal.valueOf(userLongitude),
+                        activity.getLatitude(),
+                        activity.getLongitude()
+                    );
+                    return distance <= radiusKm;
+                })
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
-    }
-
-    // Haversine formula to calculate distance between two geographic points
-    private Double calculateDistance(Double lat1, Double lon1, BigDecimal lat2, BigDecimal lon2) {
-        final int EARTH_RADIUS = 6371; // Earth's radius in kilometers
-
-        Double dLat = Math.toRadians(lat2.doubleValue() - lat1);
-        Double dLon = Math.toRadians(lon2.doubleValue() - lon1);
-        Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2.doubleValue())) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS * c;
     }
 
     // Update activity

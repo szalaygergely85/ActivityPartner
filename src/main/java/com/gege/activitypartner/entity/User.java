@@ -41,6 +41,15 @@ public class User {
     @Column(length = 100)
     private String city; // User's city name (for autocomplete search)
 
+    @Column(length = 255)
+    private String placeId; // Google Places ID for the city
+
+    @Column(precision = 10, scale = 8)
+    private BigDecimal latitude; // User's city latitude for distance calculation
+
+    @Column(precision = 11, scale = 8)
+    private BigDecimal longitude; // User's city longitude for distance calculation
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPhoto> photos = new ArrayList<>(); // All user photos (up to 6)
 

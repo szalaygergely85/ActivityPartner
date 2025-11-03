@@ -181,6 +181,15 @@ public class UserService {
         if (request.getCity() != null) {
             user.setCity(request.getCity());
         }
+        if (request.getPlaceId() != null) {
+            user.setPlaceId(request.getPlaceId());
+        }
+        if (request.getLatitude() != null) {
+            user.setLatitude(request.getLatitude());
+        }
+        if (request.getLongitude() != null) {
+            user.setLongitude(request.getLongitude());
+        }
         if (request.getInterests() != null) {
             user.setInterests(request.getInterests());
         }
@@ -189,13 +198,16 @@ public class UserService {
         return convertToResponse(updatedUser);
     }
 
-    // Update user location (city name only)
+    // Update user location (city name, placeId, and coordinates)
     @Transactional
-    public UserResponse updateUserLocation(Long id, String city) {
+    public UserResponse updateUserLocation(Long id, String city, String placeId, BigDecimal latitude, BigDecimal longitude) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         user.setCity(city);
+        user.setPlaceId(placeId);
+        user.setLatitude(latitude);
+        user.setLongitude(longitude);
 
         User updatedUser = userRepository.save(user);
         return convertToResponse(updatedUser);
@@ -314,6 +326,9 @@ public class UserService {
         response.setRating(user.getRating());
         response.setCompletedActivities(user.getCompletedActivities());
         response.setCity(user.getCity());
+        response.setPlaceId(user.getPlaceId());
+        response.setLatitude(user.getLatitude());
+        response.setLongitude(user.getLongitude());
         response.setInterests(user.getInterests());
         response.setBadge(user.getBadge());
 

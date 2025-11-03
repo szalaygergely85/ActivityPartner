@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -93,8 +94,11 @@ public class UserController {
     @PatchMapping("/{id}/location")
     public ResponseEntity<UserResponse> updateUserLocation(
             @PathVariable Long id,
-            @RequestParam String city) {
-        UserResponse user = userService.updateUserLocation(id, city);
+            @RequestParam String city,
+            @RequestParam(required = false) String placeId,
+            @RequestParam(required = false) BigDecimal latitude,
+            @RequestParam(required = false) BigDecimal longitude) {
+        UserResponse user = userService.updateUserLocation(id, city, placeId, latitude, longitude);
         return ResponseEntity.ok(user);
     }
 

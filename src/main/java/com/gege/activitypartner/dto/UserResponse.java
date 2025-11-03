@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,9 @@ public class UserResponse {
     private Double rating;
     private Integer completedActivities;
     private String city; // User's city name
+    private String placeId; // Google Places ID for the city
+    private BigDecimal latitude; // User's city latitude
+    private BigDecimal longitude; // User's city longitude
     private List<String> interests;
     private String badge;
     private List<UserPhotoResponse> photos = new ArrayList<>(); // User's photos (up to 6)

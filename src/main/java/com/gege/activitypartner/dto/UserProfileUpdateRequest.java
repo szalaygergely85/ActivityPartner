@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -20,6 +21,12 @@ public class UserProfileUpdateRequest {
     private String profileImageUrl;
 
     private String city;
+
+    private String placeId;
+
+    private BigDecimal latitude;
+
+    private BigDecimal longitude;
 
     private List<String> interests;
 }
