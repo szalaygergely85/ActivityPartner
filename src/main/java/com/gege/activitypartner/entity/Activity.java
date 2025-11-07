@@ -33,12 +33,15 @@ public class Activity {
     private LocalDateTime activityDate;
 
     @Column(nullable = false)
-    private String location;
+    private String location; // Location name
+
+    @Column(length = 255)
+    private String placeId; // Google Places ID for the location
 
     @Column(precision = 10, scale = 8)
     private BigDecimal latitude; // Geographic latitude
 
-    @Column(precision = 10, scale = 8)
+    @Column(precision = 11, scale = 8)
     private BigDecimal longitude; // Geographic longitude
 
     @Column(nullable = false)

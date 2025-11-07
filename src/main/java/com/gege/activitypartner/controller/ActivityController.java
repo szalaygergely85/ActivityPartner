@@ -45,8 +45,18 @@ public class ActivityController {
 
     // Get all activities
     @GetMapping
-    public ResponseEntity<List<ActivityResponseDTO>> getAllActivities() {
-        List<ActivityResponseDTO> activities = activityService.getAllActivities();
+    public ResponseEntity<List<ActivityResponseDTO>> getAllActivities(
+            @RequestParam(required = false) Double userLatitude,
+            @RequestParam(required = false) Double userLongitude) {
+        List<ActivityResponseDTO> activities;
+
+        // If user coordinates are provided, calculate distances
+        if (userLatitude != null && userLongitude != null) {
+            activities = activityService.getAllActivitiesWithDistance(userLatitude, userLongitude);
+        } else {
+            activities = activityService.getAllActivities();
+        }
+
         return ResponseEntity.ok(activities);
     }
 
@@ -79,7 +89,8 @@ public class ActivityController {
     // Get available upcoming activities
     @GetMapping("/upcoming")
     public ResponseEntity<List<ActivityResponseDTO>> getAvailableUpcomingActivities() {
-        List<ActivityResponseDTO> activities = activityService.getAvailableUpcomingActivities();
+        Long userId = securityContextUtil.getCurrentUserId();
+        List<ActivityResponseDTO> activities = activityService.getAvailableUpcomingActivities(userId);
         return ResponseEntity.ok(activities);
     }
 
@@ -100,10 +111,21 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
-    // Update activity
+    // Update activity (partial update)
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ActivityResponseDTO> updateActivity(
+            @PathVariable Long id,
+            @Valid @RequestBody ActivityUpdateDTO updateDTO) {
+        Long userId = securityContextUtil.getCurrentUserId();
+        ActivityResponseDTO response = activityService.updateActivity(id, updateDTO, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    // Update activity (full update)
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ActivityResponseDTO> updateActivityFull(
             @PathVariable Long id,
             @Valid @RequestBody ActivityUpdateDTO updateDTO) {
         Long userId = securityContextUtil.getCurrentUserId();

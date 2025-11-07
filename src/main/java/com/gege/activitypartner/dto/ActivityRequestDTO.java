@@ -26,6 +26,8 @@ public class ActivityRequestDTO {
     @NotBlank(message = "Location is required")
     private String location;
 
+    private String placeId; // Google Places ID for the location
+
     @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90")
     @DecimalMax(value = "90.0", message = "Latitude must be between -90 and 90")
     private Double latitude; // Geographic latitude from Google Maps

@@ -17,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,7 @@ public class ActivityService {
         activity.setDescription(request.getDescription());
         activity.setActivityDate(request.getActivityDate());
         activity.setLocation(request.getLocation());
+        activity.setPlaceId(request.getPlaceId());
         activity.setLatitude(request.getLatitude() != null ? BigDecimal.valueOf(request.getLatitude()) : null);
         activity.setLongitude(request.getLongitude() != null ? BigDecimal.valueOf(request.getLongitude()) : null);
         activity.setCategory(request.getCategory());
@@ -68,6 +71,16 @@ public class ActivityService {
     public List<ActivityResponseDTO> getAllActivities() {
         return activityRepository.findAll().stream()
                 .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Get all activities with distance calculation
+    @Transactional(readOnly = true)
+    public List<ActivityResponseDTO> getAllActivitiesWithDistance(Double userLatitude, Double userLongitude) {
+        BigDecimal userLat = BigDecimal.valueOf(userLatitude);
+        BigDecimal userLon = BigDecimal.valueOf(userLongitude);
+        return activityRepository.findAll().stream()
+                .map(activity -> mapToResponseDTO(activity, userLat, userLon))
                 .collect(Collectors.toList());
     }
 
@@ -107,10 +120,27 @@ public class ActivityService {
 
     // Get available upcoming activities
     @Transactional(readOnly = true)
-    public List<ActivityResponseDTO> getAvailableUpcomingActivities() {
-        return activityRepository.findAvailableUpcomingActivities(LocalDateTime.now()).stream()
+    public List<ActivityResponseDTO> getAvailableUpcomingActivities(Long userId) {
+
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        List<ActivityResponseDTO> activityResponseDTOS = activityRepository.findAvailableUpcomingActivities(LocalDateTime.now()).stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+
+        List<ActivityResponseDTO> responseDTOS = new ArrayList<>();
+for (ActivityResponseDTO activityResponseDTO : activityResponseDTOS){
+    // Only calculate distance if user has location set
+    if (currentUser.getLatitude() != null && currentUser.getLongitude() != null) {
+        activityResponseDTO.setDistance(DistanceCalculator.calculateDistance(currentUser.getLatitude(), currentUser.getLongitude(), activityResponseDTO.getLatitude(), activityResponseDTO.getLongitude()));
+    } else {
+        activityResponseDTO.setDistance(null);
+    }
+    responseDTOS.add(activityResponseDTO);
+}
+
+
+        return responseDTOS;
     }
 
     // Get trending activities
@@ -125,19 +155,20 @@ public class ActivityService {
     @Transactional(readOnly = true)
     public List<ActivityResponseDTO> getNearbyActivities(Double userLatitude, Double userLongitude, Double radiusKm) {
         List<Activity> allActivities = activityRepository.findAll();
+        BigDecimal userLat = BigDecimal.valueOf(userLatitude);
+        BigDecimal userLon = BigDecimal.valueOf(userLongitude);
 
         return allActivities.stream()
                 .filter(activity -> activity.getLatitude() != null && activity.getLongitude() != null)
                 .filter(activity -> {
                     double distance = DistanceCalculator.calculateDistance(
-                        BigDecimal.valueOf(userLatitude),
-                        BigDecimal.valueOf(userLongitude),
+                        userLat, userLon,
                         activity.getLatitude(),
                         activity.getLongitude()
                     );
                     return distance <= radiusKm;
                 })
-                .map(this::mapToResponseDTO)
+                .map(activity -> mapToResponseDTO(activity, userLat, userLon))
                 .collect(Collectors.toList());
     }
 
@@ -163,6 +194,9 @@ public class ActivityService {
         }
         if (updateDTO.getLocation() != null) {
             activity.setLocation(updateDTO.getLocation());
+        }
+        if (updateDTO.getPlaceId() != null) {
+            activity.setPlaceId(updateDTO.getPlaceId());
         }
         if (updateDTO.getLatitude() != null) {
             activity.setLatitude(BigDecimal.valueOf(updateDTO.getLatitude()));
@@ -241,14 +275,31 @@ public class ActivityService {
 
     // Helper method to map Activity to ActivityResponseDTO
     private ActivityResponseDTO mapToResponseDTO(Activity activity) {
+        return mapToResponseDTO(activity, null, null);
+    }
+
+    // Helper method to map Activity to ActivityResponseDTO with distance calculation
+    private ActivityResponseDTO mapToResponseDTO(Activity activity, BigDecimal userLatitude, BigDecimal userLongitude) {
         ActivityResponseDTO dto = new ActivityResponseDTO();
         dto.setId(activity.getId());
         dto.setTitle(activity.getTitle());
         dto.setDescription(activity.getDescription());
         dto.setActivityDate(activity.getActivityDate());
         dto.setLocation(activity.getLocation());
-        dto.setLatitude(activity.getLatitude() != null ? activity.getLatitude().doubleValue() : null);
-        dto.setLongitude(activity.getLongitude() != null ? activity.getLongitude().doubleValue() : null);
+        dto.setPlaceId(activity.getPlaceId());
+        dto.setLatitude(activity.getLatitude() != null ? activity.getLatitude() : null);
+        dto.setLongitude(activity.getLongitude() != null ? activity.getLongitude(): null);
+
+        // Calculate distance if user coordinates are provided
+        if (userLatitude != null && userLongitude != null &&
+            activity.getLatitude() != null && activity.getLongitude() != null) {
+            double distance = DistanceCalculator.calculateDistance(
+                userLatitude, userLongitude,
+                activity.getLatitude(), activity.getLongitude()
+            );
+            dto.setDistance(distance);
+        }
+
         dto.setCategory(activity.getCategory());
         dto.setTotalSpots(activity.getTotalSpots());
         dto.setAvailableSpots(activity.getAvailableSpots());

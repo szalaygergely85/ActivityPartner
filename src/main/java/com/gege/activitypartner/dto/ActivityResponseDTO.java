@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -17,8 +18,10 @@ public class ActivityResponseDTO {
     private String description;
     private LocalDateTime activityDate;
     private String location;
-    private Double latitude; // Geographic latitude
-    private Double longitude; // Geographic longitude
+    private String placeId; // Google Places ID for the location
+    private BigDecimal latitude; // Geographic latitude
+    private BigDecimal longitude; // Geographic longitude
+    private Double distance; // Distance from user's location in kilometers (calculated dynamically)
     private String category;
 
     // Spots Management

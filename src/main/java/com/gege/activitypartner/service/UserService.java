@@ -327,8 +327,8 @@ public class UserService {
         response.setCompletedActivities(user.getCompletedActivities());
         response.setCity(user.getCity());
         response.setPlaceId(user.getPlaceId());
-        response.setLatitude(user.getLatitude());
-        response.setLongitude(user.getLongitude());
+        response.setLatitude(user.getLatitude() != null ? user.getLatitude().doubleValue() : null);
+        response.setLongitude(user.getLongitude() != null ? user.getLongitude().doubleValue() : null);
         response.setInterests(user.getInterests());
         response.setBadge(user.getBadge());
 
