@@ -111,6 +111,15 @@ public class ActivityController {
         return ResponseEntity.ok(activities);
     }
 
+    // Get recommended activities based on user's interests
+    @GetMapping("/recommended")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ActivityResponseDTO>> getRecommendedActivities() {
+        Long userId = securityContextUtil.getCurrentUserId();
+        List<ActivityResponseDTO> activities = activityService.getRecommendedActivities(userId);
+        return ResponseEntity.ok(activities);
+    }
+
     // Update activity (partial update)
     @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated()")

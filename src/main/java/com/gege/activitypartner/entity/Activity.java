@@ -79,6 +79,12 @@ public class Activity {
     @OneToMany(mappedBy = "activity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ActivityParticipant> participants = new ArrayList<>();
 
+    // Activity Interests/Tags (multiple interests can be added to an activity)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "activity_interests", joinColumns = @JoinColumn(name = "activity_id"))
+    @Column(name = "interest")
+    private List<String> interests = new ArrayList<>(); // e.g., ["outdoor", "nature", "exercise"]
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -38,6 +39,9 @@ public class ActivityResponseDTO {
     private String difficulty;
     private Double cost;
     private Integer minAge;
+
+    // Activity Interests/Tags
+    private List<String> interests;
 
     // Creator Info
     private UserSimpleResponse creator;

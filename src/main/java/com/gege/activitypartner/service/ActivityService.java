@@ -50,6 +50,7 @@ public class ActivityService {
         activity.setDifficulty(request.getDifficulty());
         activity.setCost(request.getCost());
         activity.setMinAge(request.getMinAge());
+        activity.setInterests(request.getInterests());
         activity.setCreator(creator);
         activity.setStatus(ActivityStatus.OPEN);
         activity.setTrending(false);
@@ -172,6 +173,64 @@ for (ActivityResponseDTO activityResponseDTO : activityResponseDTOS){
                 .collect(Collectors.toList());
     }
 
+    // Get recommended activities based on user's interests
+    @Transactional(readOnly = true)
+    public List<ActivityResponseDTO> getRecommendedActivities(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        List<String> userInterests = user.getInterests();
+
+        // If user has no interests, return empty or trending activities
+        if (userInterests == null || userInterests.isEmpty()) {
+            return getTrendingActivities();
+        }
+
+        List<Activity> allActivities = activityRepository.findAll();
+        BigDecimal userLat = user.getLatitude();
+        BigDecimal userLon = user.getLongitude();
+
+        // Filter and score activities based on interest matches
+        return allActivities.stream()
+                .filter(activity -> activity.getStatus() == ActivityStatus.OPEN) // Only open activities
+                .filter(activity -> !activity.getCreator().getId().equals(userId)) // Exclude user's own activities
+                .filter(activity -> activity.getAvailableSpots() > 0) // Has available spots
+                .sorted((a1, a2) -> {
+                    // Score by interest matches (higher is better)
+                    int score1 = countInterestMatches(a1.getInterests(), userInterests);
+                    int score2 = countInterestMatches(a2.getInterests(), userInterests);
+                    if (score2 != score1) {
+                        return Integer.compare(score2, score1); // Sort by score descending
+                    }
+                    // If same score, sort by activity date (nearest first)
+                    return a1.getActivityDate().compareTo(a2.getActivityDate());
+                })
+                .map(activity -> {
+                    // Calculate distance if user location is available
+                    if (userLat != null && userLon != null) {
+                        return mapToResponseDTO(activity, userLat, userLon);
+                    } else {
+                        return mapToResponseDTO(activity);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    // Helper method to count matching interests between activity and user
+    private int countInterestMatches(List<String> activityInterests, List<String> userInterests) {
+        if (activityInterests == null || activityInterests.isEmpty()) {
+            return 0;
+        }
+
+        int matches = 0;
+        for (String interest : activityInterests) {
+            if (userInterests.contains(interest)) {
+                matches++;
+            }
+        }
+        return matches;
+    }
+
     // Update activity
     public ActivityResponseDTO updateActivity(Long id, ActivityUpdateDTO updateDTO, Long userId) {
         Activity activity = activityRepository.findById(id)
@@ -224,6 +283,9 @@ for (ActivityResponseDTO activityResponseDTO : activityResponseDTOS){
         }
         if (updateDTO.getMinAge() != null) {
             activity.setMinAge(updateDTO.getMinAge());
+        }
+        if (updateDTO.getInterests() != null) {
+            activity.setInterests(updateDTO.getInterests());
         }
 
         Activity updatedActivity = activityRepository.save(activity);
@@ -310,6 +372,7 @@ for (ActivityResponseDTO activityResponseDTO : activityResponseDTOS){
         dto.setDifficulty(activity.getDifficulty());
         dto.setCost(activity.getCost());
         dto.setMinAge(activity.getMinAge());
+        dto.setInterests(activity.getInterests());
 
         // Map creator user object
         UserSimpleResponse creatorResponse = new UserSimpleResponse();

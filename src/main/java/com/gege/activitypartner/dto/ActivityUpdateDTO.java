@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -53,4 +54,6 @@ public class ActivityUpdateDTO {
     @Min(value = 0, message = "Minimum age cannot be negative")
     @Max(value = 100, message = "Minimum age cannot exceed 100")
     private Integer minAge;
+
+    private List<String> interests; // Activity interests/tags
 }
