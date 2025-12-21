@@ -33,6 +33,9 @@ dependencies {
     runtimeOnly 'com.h2database:h2' // H2 for development
     runtimeOnly 'org.postgresql:postgresql' // PostgreSQL for production
 
+    // Hibernate dependencies
+    implementation 'org.hibernate.common:hibernate-commons-annotations:6.0.6.Final'
+
     // JWT (JSON Web Token)
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'

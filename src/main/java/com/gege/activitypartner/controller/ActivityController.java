@@ -106,7 +106,7 @@ public class ActivityController {
     public ResponseEntity<List<ActivityResponseDTO>> getNearbyActivities(
             @RequestParam Double latitude,
             @RequestParam Double longitude,
-            @RequestParam(defaultValue = "10.0") Double radiusKm) {
+            @RequestParam(defaultValue = "250.0") Double radiusKm) {
         List<ActivityResponseDTO> activities = activityService.getNearbyActivities(latitude, longitude, radiusKm);
         return ResponseEntity.ok(activities);
     }

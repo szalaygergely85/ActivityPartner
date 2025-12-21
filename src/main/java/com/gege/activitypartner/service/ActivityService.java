@@ -155,7 +155,7 @@ for (ActivityResponseDTO activityResponseDTO : activityResponseDTOS){
     // Get nearby activities within radius
     @Transactional(readOnly = true)
     public List<ActivityResponseDTO> getNearbyActivities(Double userLatitude, Double userLongitude, Double radiusKm) {
-        List<Activity> allActivities = activityRepository.findAll();
+        List<Activity> allActivities = activityRepository.findAvailableUpcomingActivities(LocalDateTime.now());
         BigDecimal userLat = BigDecimal.valueOf(userLatitude);
         BigDecimal userLon = BigDecimal.valueOf(userLongitude);
 
