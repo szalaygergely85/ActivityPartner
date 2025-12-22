@@ -10,15 +10,20 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_photos")
+@Table(name = "activity_photos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserPhoto {
+public class ActivityPhoto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "activity_id", nullable = false)
+    @ToString.Exclude
+    private Activity activity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -29,10 +34,7 @@ public class UserPhoto {
     private String photoUrl;
 
     @Column(nullable = false)
-    private Boolean isProfilePicture = false; // Flag to indicate which photo is the main profile picture
-
-    @Column(nullable = false)
-    private Integer displayOrder = 0; // Order to display photos (1-6)
+    private Integer displayOrder = 0; // Order to display photos
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

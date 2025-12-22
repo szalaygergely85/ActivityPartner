@@ -2,6 +2,7 @@ package com.gege.activitypartner.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +16,7 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "reporter_id", nullable = false)
+    @ToString.Exclude
     private User reporter;
 
     @Enumerated(EnumType.STRING)
@@ -23,14 +25,17 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "reported_activity_id")
+    @ToString.Exclude
     private Activity reportedActivity;
 
     @ManyToOne
     @JoinColumn(name = "reported_message_id")
+    @ToString.Exclude
     private ActivityMessage reportedMessage;
 
     @ManyToOne
     @JoinColumn(name = "reported_user_id")
+    @ToString.Exclude
     private User reportedUser;
 
     @Column(nullable = false, columnDefinition = "TEXT")
