@@ -42,12 +42,14 @@ public class ActivityPhotoService {
 
     /**
      * Check if a user has access to view the activity gallery.
-     * Gallery is accessible only to participants who joined the activity after the event has ended
+     * Gallery is accessible to activity creators and participants who joined, after the event has ended
      */
     public ActivityGalleryAccessResponse checkGalleryAccess(Long activityId, Long userId) {
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id: " + activityId));
 
+        // Check if user is the activity creator
+        boolean isCreator = activity.getCreator().getId().equals(userId);
 
         // Check if user was a participant who joined
         ActivityParticipant participant = activityParticipantRepository
@@ -68,10 +70,11 @@ public class ActivityPhotoService {
         response.setPhotoCount((int) photoCount);
         response.setMaxPhotos(maxPhotosPerActivity);
 
-        if (!wasParticipant) {
+        // User must be either creator or participant
+        if (!isCreator && !wasParticipant) {
             response.setHasAccess(false);
             response.setCanUpload(false);
-            response.setReason("Only participants who joined this activity can view the gallery");
+            response.setReason("Only the activity creator and participants who joined can view the gallery");
             return response;
         }
 
@@ -82,7 +85,7 @@ public class ActivityPhotoService {
             return response;
         }
 
-        // User has access
+        // User has access (either creator or participant, and activity has ended)
         response.setHasAccess(true);
         response.setCanUpload(photoCount < maxPhotosPerActivity);
         response.setReason(null);
