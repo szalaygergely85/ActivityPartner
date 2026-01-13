@@ -19,4 +19,7 @@ public class CategoryRequest {
 
     @Size(max = 10, message = "Icon must not exceed 10 characters")
     private String icon;
+
+    @Size(max = 100, message = "Image resource name must not exceed 100 characters")
+    private String imageResourceName;
 }

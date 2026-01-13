@@ -126,6 +126,7 @@ public class CategoryService {
         response.setName(category.getName());
         response.setDescription(category.getDescription());
         response.setIcon(category.getIcon());
+        response.setImageResourceName(category.getImageResourceName());
         response.setIsActive(category.getIsActive());
         response.setActivityCount(category.getActivityCount());
         response.setCreatedAt(category.getCreatedAt());

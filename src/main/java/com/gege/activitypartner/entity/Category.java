@@ -28,6 +28,9 @@ public class Category {
     @Column(length = 10)
     private String icon;
 
+    @Column(length = 100)
+    private String imageResourceName;
+
     @Column(nullable = false)
     private Boolean isActive = true;
 

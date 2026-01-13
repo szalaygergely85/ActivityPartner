@@ -33,6 +33,10 @@ dependencies {
     runtimeOnly 'com.h2database:h2' // H2 for development
     runtimeOnly 'org.postgresql:postgresql' // PostgreSQL for production
 
+    // Flyway Database Migration
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+
     // Hibernate dependencies
     implementation 'org.hibernate.common:hibernate-commons-annotations:6.0.6.Final'
 

@@ -15,6 +15,7 @@ public class CategoryResponse {
     private String name;
     private String description;
     private String icon;
+    private String imageResourceName;
     private Boolean isActive;
     private Integer activityCount;
     private LocalDateTime createdAt;
