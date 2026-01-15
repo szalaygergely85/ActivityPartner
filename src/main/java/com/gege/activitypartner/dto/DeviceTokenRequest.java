@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeviceTokenRequest {
 
-    @NotBlank(message = "FCM token is required")
-    private String fcmToken;
+  @NotBlank(message = "FCM token is required")
+  private String fcmToken;
 }

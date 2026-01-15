@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CategoryRequest {
 
-    @NotBlank(message = "Category name is required")
-    private String name;
+  @NotBlank(message = "Category name is required")
+  private String name;
 
-    @Size(max = 200, message = "Description must not exceed 200 characters")
-    private String description;
+  @Size(max = 200, message = "Description must not exceed 200 characters")
+  private String description;
 
-    @Size(max = 10, message = "Icon must not exceed 10 characters")
-    private String icon;
+  @Size(max = 10, message = "Icon must not exceed 10 characters")
+  private String icon;
 
-    @Size(max = 100, message = "Image resource name must not exceed 100 characters")
-    private String imageResourceName;
+  @Size(max = 100, message = "Image resource name must not exceed 100 characters")
+  private String imageResourceName;
 }

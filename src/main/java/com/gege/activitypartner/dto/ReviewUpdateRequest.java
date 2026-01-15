@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReviewUpdateRequest {
 
-    @Min(value = 1, message = "Rating must be at least 1")
-    @Max(value = 5, message = "Rating must be at most 5")
-    private Integer rating;
+  @Min(value = 1, message = "Rating must be at least 1")
+  @Max(value = 5, message = "Rating must be at most 5")
+  private Integer rating;
 
-    @Size(max = 500, message = "Comment must not exceed 500 characters")
-    private String comment;
+  @Size(max = 500, message = "Comment must not exceed 500 characters")
+  private String comment;
 }

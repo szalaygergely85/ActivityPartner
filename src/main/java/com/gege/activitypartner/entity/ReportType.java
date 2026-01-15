@@ -1,7 +1,7 @@
 package com.gege.activitypartner.entity;
 
 public enum ReportType {
-    ACTIVITY,
-    MESSAGE,
-    USER
+  ACTIVITY,
+  MESSAGE,
+  USER
 }

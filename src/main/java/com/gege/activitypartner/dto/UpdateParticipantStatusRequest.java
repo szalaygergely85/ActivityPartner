@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateParticipantStatusRequest {
 
-    @NotNull(message = "Status is required")
-    private ParticipantStatus status;
+  @NotNull(message = "Status is required")
+  private ParticipantStatus status;
 }

@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserSimpleResponse {
 
-    private Long id;
-    private String fullName;
-    private String profileImageUrl;
-    private Double rating;
-    private String badge;
+  private Long id;
+  private String fullName;
+  private String profileImageUrl;
+  private Double rating;
+  private String badge;
 }

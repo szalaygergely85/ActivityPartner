@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotificationPreferenceRequest {
 
-    @NotNull(message = "Notification preference is required")
-    private Boolean notificationsEnabled;
+  @NotNull(message = "Notification preference is required")
+  private Boolean notificationsEnabled;
 }

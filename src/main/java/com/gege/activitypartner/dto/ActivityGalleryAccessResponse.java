@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ActivityGalleryAccessResponse {
 
-    private Boolean hasAccess;
-    private String reason; // Explanation if no access
-    private Boolean canUpload;
-    private Integer photoCount;
-    private Integer maxPhotos;
+  private Boolean hasAccess;
+  private String reason; // Explanation if no access
+  private Boolean canUpload;
+  private Integer photoCount;
+  private Integer maxPhotos;
 }

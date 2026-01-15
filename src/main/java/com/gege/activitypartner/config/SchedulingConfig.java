@@ -6,5 +6,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 public class SchedulingConfig {
-    // This configuration enables Spring's @Scheduled support for periodic tasks
+  // This configuration enables Spring's @Scheduled support for periodic tasks
 }
