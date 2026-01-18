@@ -57,6 +57,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/categories/**")
                     .permitAll() // Categories are public for browsing
+                    .requestMatchers("/privacy", "/terms", "/support")
+                    .permitAll() // Static pages are public
 
                     // All other endpoints require authentication
                     .anyRequest()

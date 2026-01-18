@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support - Vivento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #2563eb;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        h2:first-child {
+            margin-top: 0;
+        }
+        p {
+            margin-bottom: 15px;
+            color: #444;
+        }
+        ul {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .contact-card {
+            background: #f0f7ff;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2563eb;
+        }
+        .contact-card h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        .faq-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vivento</h1>
+            <p>Support Center</p>
+        </div>
+
+        <div class="content">
+            <h2>How Can We Help?</h2>
+            <p>We're here to help you get the most out of Vivento. Find answers to common questions below or contact our support team.</p>
+
+            <div class="contact-card">
+                <h3>Contact Support</h3>
+                <p>Email: <a href="mailto:support@vivent.fun">support@vivent.fun</a></p>
+                <p>We typically respond within 24-48 hours.</p>
+            </div>
+
+            <h2>Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <p class="faq-question">How do I create an activity?</p>
+                <p>Tap the "+" button on the home screen, fill in the activity details including title, description, date, time, and location, then tap "Create Activity".</p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">How do I join an activity?</p>
+                <p>Browse activities on the Explore tab, tap on one you're interested in, and tap "Express Interest" to request to join. The activity creator will approve your request.</p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">How do I edit my profile?</p>
+                <p>Go to the Profile tab and tap "Edit Profile". You can update your name, bio, profile picture, and interests.</p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">How do I delete my account?</p>
+                <p>Go to Profile > Settings and select "Delete Account". This action is permanent and will remove all your data.</p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">How do I report inappropriate content or users?</p>
+                <p>On any activity or user profile, tap the menu (three dots) and select "Report". Provide details about the issue and our team will review it.</p>
+            </div>
+
+            <div class="faq-item">
+                <p class="faq-question">Why am I not receiving notifications?</p>
+                <p>Make sure notifications are enabled in your device settings for Vivento. Also check in-app notification settings under Profile > Settings.</p>
+            </div>
+
+            <h2>Safety Tips</h2>
+            <ul>
+                <li>Meet in public places for your first meeting with someone new</li>
+                <li>Tell a friend or family member about your plans</li>
+                <li>Trust your instincts - if something feels wrong, leave</li>
+                <li>Don't share personal information like your home address</li>
+                <li>Report any suspicious behavior to our support team</li>
+            </ul>
+
+            <h2>App Issues</h2>
+            <p>If you're experiencing technical issues:</p>
+            <ul>
+                <li>Make sure you have the latest version of the app</li>
+                <li>Try closing and reopening the app</li>
+                <li>Check your internet connection</li>
+                <li>If problems persist, contact support with details about the issue</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2026 Vivento. All rights reserved.</p>
+            <p><a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+        </div>
+    </div>
+</body>
+</html>
