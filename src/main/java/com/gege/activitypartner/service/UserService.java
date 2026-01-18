@@ -16,6 +16,8 @@ import com.gege.activitypartner.exception.ResourceNotFoundException;
 import com.gege.activitypartner.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -119,10 +121,17 @@ public class UserService {
       throw new DuplicateResourceException("Email already registered");
     }
 
+    // Validate age (must be 18 or older)
+    int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
+    if (age < 18) {
+      throw new IllegalArgumentException("You must be at least 18 years old to register");
+    }
+
     User user = new User();
     user.setFullName(request.getFullName());
     user.setEmail(request.getEmail());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
+    user.setBirthDate(request.getBirthDate());
     user.setRating(0.0);
     user.setCompletedActivities(0);
     user.setIsActive(true);

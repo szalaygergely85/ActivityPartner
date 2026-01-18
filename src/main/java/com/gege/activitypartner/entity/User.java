@@ -2,6 +2,7 @@ package com.gege.activitypartner.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,9 @@ public class User {
 
   @Column(nullable = false)
   private String password; // Will be encrypted with BCrypt
+
+  @Column(nullable = false)
+  private LocalDate birthDate;
 
   @Column(length = 500)
   private String bio;
