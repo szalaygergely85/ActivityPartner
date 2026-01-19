@@ -139,6 +139,18 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  // Request account deletion (public endpoint for Google Play compliance)
+  @PostMapping("/request-deletion")
+  public ResponseEntity<Void> requestAccountDeletion(
+      @RequestBody java.util.Map<String, String> request) {
+    String email = request.get("email");
+    if (email != null && !email.isBlank()) {
+      userService.requestAccountDeletion(email);
+    }
+    // Always return success to not reveal if email exists
+    return ResponseEntity.ok().build();
+  }
+
   // Upload profile image
   @PostMapping("/{id}/profile-image")
   public ResponseEntity<com.gege.activitypartner.dto.ImageUploadResponse> uploadProfileImage(

@@ -9,10 +9,12 @@ import com.gege.activitypartner.dto.UserProfileUpdateRequest;
 import com.gege.activitypartner.dto.UserRegistrationRequest;
 import com.gege.activitypartner.dto.UserResponse;
 import com.gege.activitypartner.dto.UserSimpleResponse;
+import com.gege.activitypartner.entity.AccountDeletionRequest;
 import com.gege.activitypartner.entity.RefreshToken;
 import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.exception.DuplicateResourceException;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
+import com.gege.activitypartner.repository.AccountDeletionRequestRepository;
 import com.gege.activitypartner.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -33,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final AccountDeletionRequestRepository accountDeletionRequestRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
   private final RefreshTokenService refreshTokenService;
@@ -300,6 +303,19 @@ public class UserService {
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     user.setIsActive(false);
     userRepository.save(user);
+  }
+
+  // Request account deletion by email (for Google Play compliance)
+  // Stores request for admin to process later. Only one request per email allowed (anti-spam).
+  @Transactional
+  public void requestAccountDeletion(String email) {
+    // Only create request if one doesn't already exist for this email
+    if (!accountDeletionRequestRepository.existsByEmail(email)) {
+      AccountDeletionRequest request = new AccountDeletionRequest();
+      request.setEmail(email);
+      accountDeletionRequestRepository.save(request);
+    }
+    // Always succeeds silently - don't reveal if email exists or if request was already made
   }
 
   // Update profile image

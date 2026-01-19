@@ -24,4 +24,9 @@ public class PageController {
   public String support() {
     return "support";
   }
+
+  @GetMapping("/delete-account")
+  public String deleteAccount() {
+    return "delete-account";
+  }
 }

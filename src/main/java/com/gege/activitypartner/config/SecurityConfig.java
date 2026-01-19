@@ -57,8 +57,10 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/categories/**")
                     .permitAll() // Categories are public for browsing
-                    .requestMatchers("/privacy", "/terms", "/support")
+                    .requestMatchers("/privacy", "/terms", "/support", "/delete-account")
                     .permitAll() // Static pages are public
+                    .requestMatchers("/api/users/request-deletion")
+                    .permitAll() // Account deletion request is public (Google Play compliance)
 
                     // All other endpoints require authentication
                     .anyRequest()
