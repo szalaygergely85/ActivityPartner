@@ -61,6 +61,8 @@ public class SecurityConfig {
                     .permitAll() // Static pages are public
                     .requestMatchers("/api/users/request-deletion")
                     .permitAll() // Account deletion request is public (Google Play compliance)
+                    .requestMatchers("/admin/**")
+                    .permitAll() // Admin endpoints handle their own auth via token
 
                     // All other endpoints require authentication
                     .anyRequest()

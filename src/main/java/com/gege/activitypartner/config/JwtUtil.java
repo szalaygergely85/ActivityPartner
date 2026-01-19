@@ -65,7 +65,26 @@ public class JwtUtil {
   public String generateToken(String email, Long userId) {
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId", userId);
+    claims.put("role", "user");
     return createToken(claims, email, expiration);
+  }
+
+  // Generate access token for admin
+  public String generateAdminToken(String username, Long adminId) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("adminId", adminId);
+    claims.put("role", "admin");
+    return createToken(claims, username, expiration);
+  }
+
+  // Extract role from token
+  public String extractRole(String token) {
+    return extractClaim(token, claims -> claims.get("role", String.class));
+  }
+
+  // Extract admin ID from token
+  public Long extractAdminId(String token) {
+    return extractClaim(token, claims -> claims.get("adminId", Long.class));
   }
 
   // Generate refresh token for user

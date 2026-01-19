@@ -29,4 +29,9 @@ public class PageController {
   public String deleteAccount() {
     return "delete-account";
   }
+
+  @GetMapping("/admin")
+  public String admin() {
+    return "admin";
+  }
 }
