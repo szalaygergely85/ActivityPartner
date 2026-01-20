@@ -28,8 +28,7 @@ public class CrashLog {
   @Column(columnDefinition = "LONGTEXT")
   private String stackTrace;
 
-  @Column
-  private Long userId;
+  @Column private Long userId;
 
   @Column(length = 50)
   private String platform; // android, ios

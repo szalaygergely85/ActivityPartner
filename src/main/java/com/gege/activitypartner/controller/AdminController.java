@@ -1,9 +1,9 @@
 package com.gege.activitypartner.controller;
 
 import com.gege.activitypartner.entity.AccountDeletionRequest;
+import com.gege.activitypartner.entity.AppLog;
 import com.gege.activitypartner.entity.CrashLog;
 import com.gege.activitypartner.entity.DownloadLog;
-import com.gege.activitypartner.entity.AppLog;
 import com.gege.activitypartner.service.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -97,11 +97,11 @@ public class AdminController {
     }
 
     AdminService.DownloadStats stats = adminService.getDownloadStats();
-    return ResponseEntity.ok(Map.of(
-        "total", stats.total(),
-        "android", stats.android(),
-        "ios", stats.ios()
-    ));
+    return ResponseEntity.ok(
+        Map.of(
+            "total", stats.total(),
+            "android", stats.android(),
+            "ios", stats.ios()));
   }
 
   // Get app logs

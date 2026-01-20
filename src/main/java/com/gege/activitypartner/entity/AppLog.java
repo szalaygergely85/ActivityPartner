@@ -34,8 +34,7 @@ public class AppLog {
   @Column(length = 50)
   private String platform;
 
-  @Column
-  private Long userId;
+  @Column private Long userId;
 
   @Column(nullable = false)
   private LocalDateTime loggedAt;
