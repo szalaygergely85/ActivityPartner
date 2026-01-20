@@ -61,6 +61,12 @@ public class SecurityConfig {
                     .permitAll() // Static pages are public
                     .requestMatchers("/api/users/request-deletion")
                     .permitAll() // Account deletion request is public (Google Play compliance)
+                    .requestMatchers("/api/crash-logs")
+                    .permitAll() // Crash logs can be sent without auth
+                    .requestMatchers("/api/downloads")
+                    .permitAll() // Download logs can be sent without auth
+                    .requestMatchers("/api/logs", "/api/logs/**")
+                    .permitAll() // App logs can be sent without auth
                     .requestMatchers("/admin/**")
                     .permitAll() // Admin endpoints handle their own auth via token
 

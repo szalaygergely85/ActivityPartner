@@ -1,6 +1,9 @@
 package com.gege.activitypartner.controller;
 
 import com.gege.activitypartner.entity.AccountDeletionRequest;
+import com.gege.activitypartner.entity.CrashLog;
+import com.gege.activitypartner.entity.DownloadLog;
+import com.gege.activitypartner.entity.AppLog;
 import com.gege.activitypartner.service.AdminService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -59,6 +62,58 @@ public class AdminController {
 
     adminService.markDeletionRequestProcessed(id);
     return ResponseEntity.ok(Map.of("success", true));
+  }
+
+  // Get crash logs
+  @GetMapping("/crash-logs")
+  public ResponseEntity<?> getCrashLogs(HttpServletRequest request) {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+    }
+
+    List<CrashLog> logs = adminService.getRecentCrashLogs();
+    return ResponseEntity.ok(logs);
+  }
+
+  // Get download logs
+  @GetMapping("/download-logs")
+  public ResponseEntity<?> getDownloadLogs(HttpServletRequest request) {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+    }
+
+    List<DownloadLog> logs = adminService.getRecentDownloadLogs();
+    return ResponseEntity.ok(logs);
+  }
+
+  // Get download stats
+  @GetMapping("/download-stats")
+  public ResponseEntity<?> getDownloadStats(HttpServletRequest request) {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+    }
+
+    AdminService.DownloadStats stats = adminService.getDownloadStats();
+    return ResponseEntity.ok(Map.of(
+        "total", stats.total(),
+        "android", stats.android(),
+        "ios", stats.ios()
+    ));
+  }
+
+  // Get app logs
+  @GetMapping("/app-logs")
+  public ResponseEntity<?> getAppLogs(HttpServletRequest request) {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+    }
+
+    List<AppLog> logs = adminService.getRecentAppLogs();
+    return ResponseEntity.ok(logs);
   }
 
   // Helper to validate admin token from request

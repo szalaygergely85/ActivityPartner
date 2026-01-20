@@ -3,8 +3,14 @@ package com.gege.activitypartner.service;
 import com.gege.activitypartner.config.JwtUtil;
 import com.gege.activitypartner.entity.AccountDeletionRequest;
 import com.gege.activitypartner.entity.Admin;
+import com.gege.activitypartner.entity.CrashLog;
+import com.gege.activitypartner.entity.DownloadLog;
+import com.gege.activitypartner.entity.AppLog;
 import com.gege.activitypartner.repository.AccountDeletionRequestRepository;
+import com.gege.activitypartner.repository.AppLogRepository;
 import com.gege.activitypartner.repository.AdminRepository;
+import com.gege.activitypartner.repository.CrashLogRepository;
+import com.gege.activitypartner.repository.DownloadLogRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +25,9 @@ public class AdminService {
 
   private final AdminRepository adminRepository;
   private final AccountDeletionRequestRepository accountDeletionRequestRepository;
+  private final CrashLogRepository crashLogRepository;
+  private final DownloadLogRepository downloadLogRepository;
+  private final AppLogRepository appLogRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
 
@@ -68,6 +77,31 @@ public class AdminService {
               request.setProcessedAt(LocalDateTime.now());
               accountDeletionRequestRepository.save(request);
             });
+  }
+
+  // Get recent crash logs
+  public List<CrashLog> getRecentCrashLogs() {
+    return crashLogRepository.findTop100ByOrderByReceivedAtDesc();
+  }
+
+  // Get recent download logs
+  public List<DownloadLog> getRecentDownloadLogs() {
+    return downloadLogRepository.findTop100ByOrderByDownloadedAtDesc();
+  }
+
+  // Get download stats
+  public DownloadStats getDownloadStats() {
+    long total = downloadLogRepository.countTotal();
+    long android = downloadLogRepository.countByPlatform("android");
+    long ios = downloadLogRepository.countByPlatform("ios");
+    return new DownloadStats(total, android, ios);
+  }
+
+  public record DownloadStats(long total, long android, long ios) {}
+
+  // Get recent app logs
+  public List<AppLog> getRecentAppLogs() {
+    return appLogRepository.findTop100ByOrderByReceivedAtDesc();
   }
 
   // Create admin (for initial setup - call manually or via initializer)

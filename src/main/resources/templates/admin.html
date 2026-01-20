@@ -17,6 +17,7 @@
                     colors: {
                         "primary": "#0d7ff2",
                         "danger": "#ef4444",
+                        "warning": "#f59e0b",
                         "background-dark": "#0a0f14",
                     },
                     fontFamily: {
@@ -124,7 +125,7 @@
 
     <!-- Dashboard Section -->
     <div id="dashboard-section" class="hidden w-full max-w-[1200px] flex flex-col items-center px-6 py-12 relative z-10">
-        <div class="w-full flex items-center justify-between mb-10">
+        <div class="w-full flex items-center justify-between mb-8">
             <div class="flex items-center gap-2">
                 <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                     <span class="material-symbols-outlined text-white text-2xl">explore</span>
@@ -140,7 +141,32 @@
             </button>
         </div>
 
-        <div class="glass-card w-full rounded-2xl p-8 md:p-10">
+        <!-- Tabs -->
+        <div class="w-full flex gap-2 mb-6">
+            <button onclick="switchTab('requests')" id="tab-requests" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-primary text-white">
+                <span class="material-symbols-outlined text-xl">delete_forever</span>
+                Deletion Requests
+                <span id="requests-count" class="hidden ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">0</span>
+            </button>
+            <button onclick="switchTab('crashes')" id="tab-crashes" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-white/5 text-slate-400 hover:bg-white/10">
+                <span class="material-symbols-outlined text-xl">bug_report</span>
+                Crash Logs
+                <span id="crashes-count" class="hidden ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">0</span>
+            </button>
+            <button onclick="switchTab('downloads')" id="tab-downloads" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-white/5 text-slate-400 hover:bg-white/10">
+                <span class="material-symbols-outlined text-xl">download</span>
+                Downloads
+                <span id="downloads-total" class="hidden ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">0</span>
+            </button>
+            <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-white/5 text-slate-400 hover:bg-white/10">
+                <span class="material-symbols-outlined text-xl">article</span>
+                Logs
+                <span id="logs-count" class="hidden ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">0</span>
+            </button>
+        </div>
+
+        <!-- Deletion Requests Panel -->
+        <div id="panel-requests" class="glass-card w-full rounded-2xl p-8 md:p-10">
             <div class="flex items-center gap-3 mb-8">
                 <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl text-danger">delete_forever</span>
@@ -164,9 +190,117 @@
             </div>
         </div>
 
+        <!-- Crash Logs Panel -->
+        <div id="panel-crashes" class="hidden glass-card w-full rounded-2xl p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl text-warning">bug_report</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Crash Logs</h2>
+                    <p class="text-slate-500 text-sm">Recent app crashes and errors</p>
+                </div>
+            </div>
+
+            <div id="crashes-list" class="space-y-4">
+                <!-- Crashes will be loaded here -->
+            </div>
+
+            <div id="no-crashes" class="hidden text-center py-16">
+                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
+                    <span class="material-symbols-outlined text-4xl text-slate-500">check_circle</span>
+                </div>
+                <p class="text-slate-400 text-lg">No crash logs</p>
+                <p class="text-slate-500 text-sm mt-2">Everything running smooth!</p>
+            </div>
+        </div>
+
+        <!-- Downloads Panel -->
+        <div id="panel-downloads" class="hidden glass-card w-full rounded-2xl p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl text-green-500">download</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">Downloads</h2>
+                    <p class="text-slate-500 text-sm">App download statistics</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-3 gap-4 mb-8">
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+                    <p class="text-3xl font-bold text-white" id="stat-total">0</p>
+                    <p class="text-slate-500 text-sm mt-1">Total</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+                    <p class="text-3xl font-bold text-green-500" id="stat-android">0</p>
+                    <p class="text-slate-500 text-sm mt-1">Android</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
+                    <p class="text-3xl font-bold text-blue-500" id="stat-ios">0</p>
+                    <p class="text-slate-500 text-sm mt-1">iOS</p>
+                </div>
+            </div>
+
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Recent Downloads</h3>
+
+            <div id="downloads-list" class="space-y-4">
+                <!-- Downloads will be loaded here -->
+            </div>
+
+            <div id="no-downloads" class="hidden text-center py-16">
+                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
+                    <span class="material-symbols-outlined text-4xl text-slate-500">hourglass_empty</span>
+                </div>
+                <p class="text-slate-400 text-lg">No downloads yet</p>
+                <p class="text-slate-500 text-sm mt-2">Waiting for first install!</p>
+            </div>
+        </div>
+
+        <!-- Logs Panel -->
+        <div id="panel-logs" class="hidden glass-card w-full rounded-2xl p-8 md:p-10">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl text-purple-500">article</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">App Logs</h2>
+                    <p class="text-slate-500 text-sm">Application events and debug logs</p>
+                </div>
+            </div>
+
+            <div id="logs-list" class="space-y-3">
+                <!-- Logs will be loaded here -->
+            </div>
+
+            <div id="no-logs" class="hidden text-center py-16">
+                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
+                    <span class="material-symbols-outlined text-4xl text-slate-500">notes</span>
+                </div>
+                <p class="text-slate-400 text-lg">No logs yet</p>
+                <p class="text-slate-500 text-sm mt-2">Logs will appear here</p>
+            </div>
+        </div>
+
         <p class="mt-12 text-slate-500 text-sm font-medium">
             &copy; 2026 Vivento. All rights reserved.
         </p>
+    </div>
+
+    <!-- Crash Detail Modal -->
+    <div id="crash-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-3xl max-h-[80vh] rounded-2xl p-6 overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-white">Crash Details</h3>
+                <button onclick="closeCrashModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-slate-400">close</span>
+                </button>
+            </div>
+            <div id="crash-modal-content" class="overflow-y-auto flex-1 text-sm">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
     </div>
 
     <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-30 pointer-events-none">
@@ -175,6 +309,7 @@
 
     <script>
         let token = localStorage.getItem('adminToken');
+        let currentTab = 'requests';
 
         if (token) {
             showDashboard();
@@ -214,6 +349,9 @@
             document.getElementById('dashboard-section').classList.remove('hidden');
             document.body.classList.remove('flex', 'items-center', 'justify-center');
             loadRequests();
+            loadCrashes();
+            loadDownloads();
+            loadLogs();
         }
 
         function logout() {
@@ -222,6 +360,22 @@
             document.getElementById('login-section').classList.remove('hidden');
             document.getElementById('dashboard-section').classList.add('hidden');
             document.body.classList.add('flex', 'items-center', 'justify-center');
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-white/5', 'text-slate-400');
+            });
+            document.getElementById('tab-' + tab).classList.remove('bg-white/5', 'text-slate-400');
+            document.getElementById('tab-' + tab).classList.add('bg-primary', 'text-white');
+
+            document.getElementById('panel-requests').classList.add('hidden');
+            document.getElementById('panel-crashes').classList.add('hidden');
+            document.getElementById('panel-downloads').classList.add('hidden');
+            document.getElementById('panel-logs').classList.add('hidden');
+            document.getElementById('panel-' + tab).classList.remove('hidden');
         }
 
         async function loadRequests() {
@@ -238,6 +392,14 @@
                 const requests = await response.json();
                 const listDiv = document.getElementById('requests-list');
                 const noRequestsDiv = document.getElementById('no-requests');
+                const countBadge = document.getElementById('requests-count');
+
+                if (requests.length > 0) {
+                    countBadge.textContent = requests.length;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
 
                 if (requests.length === 0) {
                     listDiv.innerHTML = '';
@@ -271,6 +433,240 @@
             }
         }
 
+        async function loadCrashes() {
+            try {
+                const response = await fetch('/admin/crash-logs', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.status === 401) return;
+
+                const crashes = await response.json();
+                const listDiv = document.getElementById('crashes-list');
+                const noCrashesDiv = document.getElementById('no-crashes');
+                const countBadge = document.getElementById('crashes-count');
+
+                if (crashes.length > 0) {
+                    countBadge.textContent = crashes.length;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
+
+                if (crashes.length === 0) {
+                    listDiv.innerHTML = '';
+                    noCrashesDiv.classList.remove('hidden');
+                    return;
+                }
+
+                noCrashesDiv.classList.add('hidden');
+                listDiv.innerHTML = crashes.map(crash => `
+                    <div onclick="showCrashDetail(${crash.id}, this)" class="cursor-pointer bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/[0.07] transition-colors">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-warning">smartphone</span>
+                                <span class="font-semibold text-white">${escapeHtml(crash.deviceModel || 'Unknown device')}</span>
+                                <span class="px-2 py-0.5 bg-white/10 rounded-full text-xs text-slate-400">${escapeHtml(crash.platform || 'unknown')}</span>
+                            </div>
+                            <span class="text-sm text-slate-500">${new Date(crash.receivedAt).toLocaleString()}</span>
+                        </div>
+                        <p class="text-danger font-mono text-sm truncate">${escapeHtml(crash.errorMessage || 'No error message')}</p>
+                        <div class="mt-2 flex gap-4 text-xs text-slate-500">
+                            <span>App: ${escapeHtml(crash.appVersion || '?')}</span>
+                            <span>OS: ${escapeHtml(crash.osVersion || '?')}</span>
+                            ${crash.userId ? `<span>User: #${crash.userId}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                // Store crash data for modal
+                window.crashData = crashes;
+            } catch (error) {
+                console.error('Failed to load crashes:', error);
+            }
+        }
+
+        function showCrashDetail(id) {
+            const crash = window.crashData.find(c => c.id === id);
+            if (!crash) return;
+
+            const content = document.getElementById('crash-modal-content');
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">Device</p>
+                            <p class="text-white">${escapeHtml(crash.deviceModel || 'Unknown')}</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">Platform</p>
+                            <p class="text-white">${escapeHtml(crash.platform || 'Unknown')}</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">App Version</p>
+                            <p class="text-white">${escapeHtml(crash.appVersion || 'Unknown')}</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">OS Version</p>
+                            <p class="text-white">${escapeHtml(crash.osVersion || 'Unknown')}</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">Crashed At</p>
+                            <p class="text-white">${new Date(crash.crashedAt).toLocaleString()}</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <p class="text-slate-500 text-xs mb-1">User ID</p>
+                            <p class="text-white">${crash.userId || 'Not logged in'}</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-3">
+                        <p class="text-slate-500 text-xs mb-2">Error Message</p>
+                        <p class="text-danger font-mono">${escapeHtml(crash.errorMessage || 'None')}</p>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-3">
+                        <p class="text-slate-500 text-xs mb-2">Stack Trace</p>
+                        <pre class="text-slate-300 font-mono text-xs whitespace-pre-wrap overflow-x-auto">${escapeHtml(crash.stackTrace || 'No stack trace')}</pre>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('crash-modal').classList.remove('hidden');
+        }
+
+        function closeCrashModal() {
+            document.getElementById('crash-modal').classList.add('hidden');
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('crash-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'crash-modal') closeCrashModal();
+        });
+
+        async function loadDownloads() {
+            try {
+                // Load stats
+                const statsResponse = await fetch('/admin/download-stats', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('stat-total').textContent = stats.total;
+                    document.getElementById('stat-android').textContent = stats.android;
+                    document.getElementById('stat-ios').textContent = stats.ios;
+
+                    const totalBadge = document.getElementById('downloads-total');
+                    if (stats.total > 0) {
+                        totalBadge.textContent = stats.total;
+                        totalBadge.classList.remove('hidden');
+                    } else {
+                        totalBadge.classList.add('hidden');
+                    }
+                }
+
+                // Load recent downloads
+                const response = await fetch('/admin/download-logs', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.status === 401) return;
+
+                const downloads = await response.json();
+                const listDiv = document.getElementById('downloads-list');
+                const noDownloadsDiv = document.getElementById('no-downloads');
+
+                if (downloads.length === 0) {
+                    listDiv.innerHTML = '';
+                    noDownloadsDiv.classList.remove('hidden');
+                    return;
+                }
+
+                noDownloadsDiv.classList.add('hidden');
+                listDiv.innerHTML = downloads.map(dl => `
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full ${dl.platform === 'ios' ? 'bg-blue-500/10' : 'bg-green-500/10'} flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl ${dl.platform === 'ios' ? 'text-blue-500' : 'text-green-500'}">
+                                    ${dl.platform === 'ios' ? 'phone_iphone' : 'phone_android'}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white">${escapeHtml(dl.deviceModel || 'Unknown device')}</p>
+                                <div class="flex gap-3 text-xs text-slate-500 mt-1">
+                                    <span>${escapeHtml(dl.platform || '?')}</span>
+                                    <span>OS: ${escapeHtml(dl.osVersion || '?')}</span>
+                                    <span>v${escapeHtml(dl.appVersion || '?')}</span>
+                                    ${dl.country ? `<span>${escapeHtml(dl.country)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-sm text-slate-500">${new Date(dl.downloadedAt).toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load downloads:', error);
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/admin/app-logs', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.status === 401) return;
+
+                const logs = await response.json();
+                const listDiv = document.getElementById('logs-list');
+                const noLogsDiv = document.getElementById('no-logs');
+                const countBadge = document.getElementById('logs-count');
+
+                if (logs.length > 0) {
+                    countBadge.textContent = logs.length;
+                    countBadge.classList.remove('hidden');
+                } else {
+                    countBadge.classList.add('hidden');
+                }
+
+                if (logs.length === 0) {
+                    listDiv.innerHTML = '';
+                    noLogsDiv.classList.remove('hidden');
+                    return;
+                }
+
+                noLogsDiv.classList.add('hidden');
+                listDiv.innerHTML = logs.map(log => {
+                    const levelColors = {
+                        'ERROR': 'text-danger bg-danger/10',
+                        'WARN': 'text-warning bg-warning/10',
+                        'INFO': 'text-primary bg-primary/10',
+                        'DEBUG': 'text-slate-400 bg-slate-400/10'
+                    };
+                    const levelColor = levelColors[log.level] || 'text-slate-400 bg-slate-400/10';
+
+                    return `
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <span class="px-2 py-1 rounded-lg text-xs font-bold ${levelColor}">${escapeHtml(log.level || 'LOG')}</span>
+                                ${log.tag ? `<span class="text-purple-400 text-sm font-medium">[${escapeHtml(log.tag)}]</span>` : ''}
+                            </div>
+                            <span class="text-xs text-slate-500">${new Date(log.receivedAt).toLocaleString()}</span>
+                        </div>
+                        <p class="text-white text-sm font-mono">${escapeHtml(log.message || '')}</p>
+                        <div class="mt-2 flex gap-4 text-xs text-slate-500">
+                            <span>${escapeHtml(log.platform || '?')}</span>
+                            <span>v${escapeHtml(log.appVersion || '?')}</span>
+                            <span>${escapeHtml(log.deviceModel || '?')}</span>
+                            ${log.userId ? `<span>User: #${log.userId}</span>` : ''}
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('Failed to load logs:', error);
+            }
+        }
+
         async function processRequest(id) {
             if (!confirm('Mark this request as processed? Make sure you have deleted the user data.')) return;
 
@@ -289,6 +685,7 @@
         }
 
         function escapeHtml(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
