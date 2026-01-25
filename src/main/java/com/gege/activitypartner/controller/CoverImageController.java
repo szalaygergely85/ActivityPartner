@@ -36,7 +36,8 @@ public class CoverImageController {
   @GetMapping("/{fileName:.+}")
   public ResponseEntity<Resource> getCoverImage(@PathVariable String fileName) {
     try {
-      Path filePath = coverImageStorageService.getFileStorageLocation().resolve(fileName).normalize();
+      Path filePath =
+          coverImageStorageService.getFileStorageLocation().resolve(fileName).normalize();
       Resource resource = new UrlResource(filePath.toUri());
 
       if (resource.exists() && resource.isReadable()) {

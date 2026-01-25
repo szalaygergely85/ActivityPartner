@@ -11,7 +11,6 @@ import com.gege.activitypartner.entity.DownloadLog;
 import com.gege.activitypartner.service.AdminService;
 import com.gege.activitypartner.service.CategoryService;
 import com.gege.activitypartner.service.CoverImageService;
-import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/admin")

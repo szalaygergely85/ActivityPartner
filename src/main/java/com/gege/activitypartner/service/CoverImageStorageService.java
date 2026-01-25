@@ -23,8 +23,7 @@ public class CoverImageStorageService {
     try {
       Files.createDirectories(this.fileStorageLocation);
     } catch (Exception ex) {
-      throw new FileStorageException(
-          "Could not create the directory for cover images.", ex);
+      throw new FileStorageException("Could not create the directory for cover images.", ex);
     }
   }
 
