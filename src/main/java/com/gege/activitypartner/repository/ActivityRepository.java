@@ -46,4 +46,14 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
   // Find expired activities (activities with past activityDate and OPEN status)
   List<Activity> findByStatusAndActivityDateBefore(ActivityStatus status, LocalDateTime date);
+
+  // Find activities needing reminder (within time range, OPEN status, reminder not sent)
+  @Query(
+      "SELECT a FROM Activity a WHERE a.status = :status "
+          + "AND a.activityDate BETWEEN :startTime AND :endTime "
+          + "AND a.reminderSent = false")
+  List<Activity> findActivitiesNeedingReminder(
+      @Param("status") ActivityStatus status,
+      @Param("startTime") LocalDateTime startTime,
+      @Param("endTime") LocalDateTime endTime);
 }

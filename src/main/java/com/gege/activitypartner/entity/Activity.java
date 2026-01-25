@@ -74,6 +74,9 @@ public class Activity {
   @Column(length = 255)
   private String coverImageUrl; // Optional user-selected cover image URL
 
+  @Column(nullable = false)
+  private Boolean reminderSent = false; // Track if reminder notification was sent
+
   // Relationships
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "creator_id", nullable = false)

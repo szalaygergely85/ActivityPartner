@@ -83,6 +83,127 @@ public class ActivitySchedulerService {
   }
 
   /**
+   * Scheduled task that runs every 5 minutes to send reminder notifications for activities starting
+   * within the next hour. Reminders are sent to both the activity creator and all confirmed
+   * participants.
+   */
+  @Scheduled(cron = "0 */5 * * * ?")
+  @Transactional
+  public void sendActivityReminders() {
+    try {
+      LocalDateTime now = LocalDateTime.now();
+      LocalDateTime oneHourFromNow = now.plusHours(1);
+
+      // Find OPEN activities starting in the next hour that haven't had reminders sent
+      List<Activity> activitiesNeedingReminder =
+          activityRepository.findActivitiesNeedingReminder(
+              ActivityStatus.OPEN, now, oneHourFromNow);
+
+      if (!activitiesNeedingReminder.isEmpty()) {
+        activitiesNeedingReminder.forEach(
+            activity -> {
+              sendActivityReminderNotifications(activity);
+              activity.setReminderSent(true);
+              log.info(
+                  "Sent reminder for activity '{}' (ID: {}) starting at: {}",
+                  activity.getTitle(),
+                  activity.getId(),
+                  activity.getActivityDate());
+            });
+
+        activityRepository.saveAll(activitiesNeedingReminder);
+        log.info(
+            "Successfully sent reminders for {} upcoming activities",
+            activitiesNeedingReminder.size());
+      }
+    } catch (Exception e) {
+      log.error("Error in sendActivityReminders scheduler", e);
+    }
+  }
+
+  /**
+   * Sends reminder notifications to the creator and all confirmed participants of an upcoming
+   * activity.
+   *
+   * @param activity the activity starting soon
+   */
+  private void sendActivityReminderNotifications(Activity activity) {
+    try {
+      String timeUntilStart = getTimeUntilStart(activity.getActivityDate());
+
+      // Send notification to the activity creator
+      notificationService.createAndSendNotification(
+          activity.getCreator(),
+          "Activity Starting Soon!",
+          "Your activity \""
+              + activity.getTitle()
+              + "\" is starting "
+              + timeUntilStart
+              + " at "
+              + activity.getLocation()
+              + ". Get ready!",
+          NotificationType.ACTIVITY_REMINDER,
+          activity.getId(),
+          null,
+          null);
+      log.debug(
+          "Sent activity reminder to creator: {} for activity: {}",
+          activity.getCreator().getId(),
+          activity.getId());
+
+      // Send notification to each confirmed participant
+      for (ActivityParticipant participant : activity.getParticipants()) {
+        if (participant.getStatus() == com.gege.activitypartner.entity.ParticipantStatus.JOINED) {
+          notificationService.createAndSendNotification(
+              participant.getUser(),
+              "Activity Starting Soon!",
+              "The activity \""
+                  + activity.getTitle()
+                  + "\" is starting "
+                  + timeUntilStart
+                  + " at "
+                  + activity.getLocation()
+                  + ". Don't forget!",
+              NotificationType.ACTIVITY_REMINDER,
+              activity.getId(),
+              participant.getId(),
+              null);
+
+          log.debug(
+              "Sent activity reminder to participant: {} for activity: {}",
+              participant.getUser().getId(),
+              activity.getId());
+        }
+      }
+
+      log.info(
+          "Successfully sent reminder notifications for activity: {} to creator + participants",
+          activity.getId());
+    } catch (Exception e) {
+      log.error(
+          "Error sending activity reminder notifications for activity ID: {}", activity.getId(), e);
+    }
+  }
+
+  /**
+   * Calculates a human-readable time until the activity starts.
+   *
+   * @param activityDate the activity start time
+   * @return a string like "in 45 minutes" or "in about 1 hour"
+   */
+  private String getTimeUntilStart(LocalDateTime activityDate) {
+    long minutesUntil = java.time.Duration.between(LocalDateTime.now(), activityDate).toMinutes();
+
+    if (minutesUntil <= 30) {
+      return "in " + minutesUntil + " minutes";
+    } else if (minutesUntil <= 60) {
+      return "in about 1 hour";
+    } else {
+      return "soon";
+    }
+  }
+
+  /**
    * Sends notifications to all participants of a completed activity, prompting them to leave
    * reviews for other participants.
    *
