@@ -163,6 +163,14 @@
                 Logs
                 <span id="logs-count" class="hidden ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">0</span>
             </button>
+            <button onclick="switchTab('categories')" id="tab-categories" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-white/5 text-slate-400 hover:bg-white/10">
+                <span class="material-symbols-outlined text-xl">category</span>
+                Categories
+            </button>
+            <button onclick="switchTab('covers')" id="tab-covers" class="tab-btn flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all bg-white/5 text-slate-400 hover:bg-white/10">
+                <span class="material-symbols-outlined text-xl">image</span>
+                Cover Images
+            </button>
         </div>
 
         <!-- Deletion Requests Panel -->
@@ -283,6 +291,68 @@
             </div>
         </div>
 
+        <!-- Categories Panel -->
+        <div id="panel-categories" class="hidden glass-card w-full rounded-2xl p-8 md:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl text-cyan-500">category</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Categories</h2>
+                        <p class="text-slate-500 text-sm">Manage activity categories</p>
+                    </div>
+                </div>
+                <button onclick="showAddCategoryModal()" class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">add</span>
+                    Add Category
+                </button>
+            </div>
+
+            <div id="categories-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Categories will be loaded here -->
+            </div>
+
+            <div id="no-categories" class="hidden text-center py-16">
+                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
+                    <span class="material-symbols-outlined text-4xl text-slate-500">category</span>
+                </div>
+                <p class="text-slate-400 text-lg">No categories yet</p>
+                <p class="text-slate-500 text-sm mt-2">Add your first category</p>
+            </div>
+        </div>
+
+        <!-- Cover Images Panel -->
+        <div id="panel-covers" class="hidden glass-card w-full rounded-2xl p-8 md:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl text-pink-500">image</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Cover Images</h2>
+                        <p class="text-slate-500 text-sm">Manage activity cover images</p>
+                    </div>
+                </div>
+                <button onclick="showUploadCoverModal()" class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-lg">upload</span>
+                    Upload Image
+                </button>
+            </div>
+
+            <div id="covers-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Cover images will be loaded here -->
+            </div>
+
+            <div id="no-covers" class="hidden text-center py-16">
+                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
+                    <span class="material-symbols-outlined text-4xl text-slate-500">image</span>
+                </div>
+                <p class="text-slate-400 text-lg">No cover images yet</p>
+                <p class="text-slate-500 text-sm mt-2">Upload your first image</p>
+            </div>
+        </div>
+
         <p class="mt-12 text-slate-500 text-sm font-medium">
             &copy; 2026 Vivento. All rights reserved.
         </p>
@@ -300,6 +370,95 @@
             <div id="crash-modal-content" class="overflow-y-auto flex-1 text-sm">
                 <!-- Content loaded dynamically -->
             </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="category-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="category-modal-title" class="text-xl font-bold text-white">Add Category</h3>
+                <button onclick="closeCategoryModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-slate-400">close</span>
+                </button>
+            </div>
+            <form id="category-form" class="space-y-4">
+                <input type="hidden" id="category-id" value="">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Name</label>
+                    <input id="category-name" type="text" required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="e.g. Sports">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Description</label>
+                    <textarea id="category-description" rows="3"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="Brief description of this category"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Icon (Material Symbol name)</label>
+                    <input id="category-icon" type="text"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="e.g. sports_soccer">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Image Resource (for mobile app background)</label>
+                    <input id="category-image-resource" type="text"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="e.g. sports_bg">
+                </div>
+                <div id="category-error" class="hidden text-danger text-sm"></div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeCategoryModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Cover Image Modal -->
+    <div id="cover-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white">Upload Cover Image</h3>
+                <button onclick="closeCoverModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-slate-400">close</span>
+                </button>
+            </div>
+            <form id="cover-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Display Name</label>
+                    <input id="cover-name" type="text" required
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="e.g. Mountain Adventure">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-2">Image File</label>
+                    <div id="cover-dropzone" class="border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                        <input type="file" id="cover-file" accept="image/*" required class="hidden">
+                        <span class="material-symbols-outlined text-4xl text-slate-500 mb-2">cloud_upload</span>
+                        <p class="text-slate-400">Click or drag image here</p>
+                        <p id="cover-filename" class="text-primary mt-2 hidden"></p>
+                    </div>
+                </div>
+                <div id="cover-preview" class="hidden">
+                    <img id="cover-preview-img" class="w-full h-32 object-cover rounded-xl">
+                </div>
+                <div id="cover-error" class="hidden text-danger text-sm"></div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeCoverModal()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition-all">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all">
+                        Upload
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -352,6 +511,8 @@
             loadCrashes();
             loadDownloads();
             loadLogs();
+            loadCategories();
+            loadCoverImages();
         }
 
         function logout() {
@@ -375,6 +536,8 @@
             document.getElementById('panel-crashes').classList.add('hidden');
             document.getElementById('panel-downloads').classList.add('hidden');
             document.getElementById('panel-logs').classList.add('hidden');
+            document.getElementById('panel-categories').classList.add('hidden');
+            document.getElementById('panel-covers').classList.add('hidden');
             document.getElementById('panel-' + tab).classList.remove('hidden');
         }
 
@@ -683,6 +846,296 @@
                 console.error('Failed to process request:', error);
             }
         }
+
+        // ============= CATEGORIES =============
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/admin/categories', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.status === 401) return;
+
+                const categories = await response.json();
+                const listDiv = document.getElementById('categories-list');
+                const noCategoriesDiv = document.getElementById('no-categories');
+
+                if (categories.length === 0) {
+                    listDiv.innerHTML = '';
+                    noCategoriesDiv.classList.remove('hidden');
+                    return;
+                }
+
+                noCategoriesDiv.classList.add('hidden');
+                listDiv.innerHTML = categories.map(cat => `
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-5 flex items-center justify-between hover:bg-white/[0.07] transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl text-primary">${escapeHtml(cat.icon || 'category')}</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white">${escapeHtml(cat.name)}</p>
+                                <p class="text-sm text-slate-500">${escapeHtml(cat.description || 'No description')}</p>
+                                <p class="text-xs text-slate-600 mt-1">${cat.activityCount || 0} activities${cat.imageResourceName ? ' • ' + escapeHtml(cat.imageResourceName) : ''}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="editCategory(${cat.id}, '${escapeHtml(cat.name)}', '${escapeHtml(cat.description || '')}', '${escapeHtml(cat.icon || '')}', '${escapeHtml(cat.imageResourceName || '')}')"
+                                class="p-2 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                            <button onclick="deleteCategory(${cat.id}, '${escapeHtml(cat.name)}')"
+                                class="p-2 hover:bg-danger/20 rounded-lg transition-colors text-slate-400 hover:text-danger">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        function showAddCategoryModal() {
+            document.getElementById('category-modal-title').textContent = 'Add Category';
+            document.getElementById('category-id').value = '';
+            document.getElementById('category-name').value = '';
+            document.getElementById('category-description').value = '';
+            document.getElementById('category-icon').value = '';
+            document.getElementById('category-image-resource').value = '';
+            document.getElementById('category-error').classList.add('hidden');
+            document.getElementById('category-modal').classList.remove('hidden');
+        }
+
+        function editCategory(id, name, description, icon, imageResourceName) {
+            document.getElementById('category-modal-title').textContent = 'Edit Category';
+            document.getElementById('category-id').value = id;
+            document.getElementById('category-name').value = name;
+            document.getElementById('category-description').value = description;
+            document.getElementById('category-icon').value = icon;
+            document.getElementById('category-image-resource').value = imageResourceName || '';
+            document.getElementById('category-error').classList.add('hidden');
+            document.getElementById('category-modal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').classList.add('hidden');
+        }
+
+        document.getElementById('category-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('category-id').value;
+            const name = document.getElementById('category-name').value;
+            const description = document.getElementById('category-description').value;
+            const icon = document.getElementById('category-icon').value;
+            const imageResourceName = document.getElementById('category-image-resource').value;
+            const errorDiv = document.getElementById('category-error');
+
+            const isEdit = id !== '';
+            const url = isEdit ? `/admin/categories/${id}` : '/admin/categories';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ name, description, icon, imageResourceName })
+                });
+
+                if (response.ok) {
+                    closeCategoryModal();
+                    loadCategories();
+                } else {
+                    const data = await response.json();
+                    errorDiv.textContent = data.error || 'Failed to save category';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Connection error';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        async function deleteCategory(id, name) {
+            if (!confirm(`Delete category "${name}"? Activities using this category won't be affected.`)) return;
+
+            try {
+                const response = await fetch(`/admin/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.ok) {
+                    loadCategories();
+                }
+            } catch (error) {
+                console.error('Failed to delete category:', error);
+            }
+        }
+
+        // Close category modal on backdrop click
+        document.getElementById('category-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'category-modal') closeCategoryModal();
+        });
+
+        // ============= COVER IMAGES =============
+
+        async function loadCoverImages() {
+            try {
+                const response = await fetch('/admin/cover-images', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.status === 401) return;
+
+                const images = await response.json();
+                const listDiv = document.getElementById('covers-list');
+                const noCoversDiv = document.getElementById('no-covers');
+
+                if (images.length === 0) {
+                    listDiv.innerHTML = '';
+                    noCoversDiv.classList.remove('hidden');
+                    return;
+                }
+
+                noCoversDiv.classList.add('hidden');
+                listDiv.innerHTML = images.map(img => `
+                    <div class="relative group overflow-hidden rounded-xl border border-white/10">
+                        <img src="${img.imageUrl}" alt="${escapeHtml(img.displayName)}"
+                            class="w-full h-32 object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-3">
+                            <p class="text-white text-sm font-medium truncate">${escapeHtml(img.displayName || 'Untitled')}</p>
+                        </div>
+                        <button onclick="deleteCoverImage(${img.id}, '${escapeHtml(img.displayName || 'this image')}')"
+                            class="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-danger rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                            <span class="material-symbols-outlined text-white text-lg">delete</span>
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load cover images:', error);
+            }
+        }
+
+        function showUploadCoverModal() {
+            document.getElementById('cover-name').value = '';
+            document.getElementById('cover-file').value = '';
+            document.getElementById('cover-filename').classList.add('hidden');
+            document.getElementById('cover-preview').classList.add('hidden');
+            document.getElementById('cover-error').classList.add('hidden');
+            document.getElementById('cover-modal').classList.remove('hidden');
+        }
+
+        function closeCoverModal() {
+            document.getElementById('cover-modal').classList.add('hidden');
+        }
+
+        // File input handling
+        const coverDropzone = document.getElementById('cover-dropzone');
+        const coverFileInput = document.getElementById('cover-file');
+
+        coverDropzone.addEventListener('click', () => coverFileInput.click());
+
+        coverDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            coverDropzone.classList.add('border-primary');
+        });
+
+        coverDropzone.addEventListener('dragleave', () => {
+            coverDropzone.classList.remove('border-primary');
+        });
+
+        coverDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            coverDropzone.classList.remove('border-primary');
+            if (e.dataTransfer.files.length > 0) {
+                coverFileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        coverFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            document.getElementById('cover-filename').textContent = file.name;
+            document.getElementById('cover-filename').classList.remove('hidden');
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('cover-preview-img').src = e.target.result;
+                document.getElementById('cover-preview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById('cover-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const displayName = document.getElementById('cover-name').value;
+            const file = document.getElementById('cover-file').files[0];
+            const errorDiv = document.getElementById('cover-error');
+
+            if (!file) {
+                errorDiv.textContent = 'Please select an image file';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('displayName', displayName);
+
+            try {
+                const response = await fetch('/admin/cover-images', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    closeCoverModal();
+                    loadCoverImages();
+                } else {
+                    const data = await response.json();
+                    errorDiv.textContent = data.error || 'Failed to upload image';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Connection error';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        async function deleteCoverImage(id, name) {
+            if (!confirm(`Delete "${name}"? Activities using this cover will show the default image.`)) return;
+
+            try {
+                const response = await fetch(`/admin/cover-images/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+
+                if (response.ok) {
+                    loadCoverImages();
+                }
+            } catch (error) {
+                console.error('Failed to delete cover image:', error);
+            }
+        }
+
+        // Close cover modal on backdrop click
+        document.getElementById('cover-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'cover-modal') closeCoverModal();
+        });
 
         function escapeHtml(text) {
             if (!text) return '';

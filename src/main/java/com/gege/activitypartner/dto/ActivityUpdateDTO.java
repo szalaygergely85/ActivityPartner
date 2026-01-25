@@ -55,4 +55,6 @@ public class ActivityUpdateDTO {
   private Integer minAge;
 
   private List<String> interests; // Activity interests/tags
+
+  private String coverImageUrl; // Optional user-selected cover image URL
 }

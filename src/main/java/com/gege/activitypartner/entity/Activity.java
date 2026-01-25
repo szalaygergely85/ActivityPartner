@@ -71,6 +71,9 @@ public class Activity {
 
   private Integer minAge; // Age restriction if needed
 
+  @Column(length = 255)
+  private String coverImageUrl; // Optional user-selected cover image URL
+
   // Relationships
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "creator_id", nullable = false)

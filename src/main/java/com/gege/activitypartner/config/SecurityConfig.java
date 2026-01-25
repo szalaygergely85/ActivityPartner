@@ -57,6 +57,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/categories/**")
                     .permitAll() // Categories are public for browsing
+                    .requestMatchers("/api/covers/**")
+                    .permitAll() // Cover images are public for activity creation
                     .requestMatchers("/privacy", "/terms", "/support", "/delete-account")
                     .permitAll() // Static pages are public
                     .requestMatchers("/api/users/request-deletion")

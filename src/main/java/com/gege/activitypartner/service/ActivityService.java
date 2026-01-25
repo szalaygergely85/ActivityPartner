@@ -54,6 +54,7 @@ public class ActivityService {
     activity.setCost(request.getCost());
     activity.setMinAge(request.getMinAge());
     activity.setInterests(request.getInterests());
+    activity.setCoverImageUrl(request.getCoverImageUrl());
     activity.setCreator(creator);
     activity.setStatus(ActivityStatus.OPEN);
     activity.setTrending(false);
@@ -308,6 +309,9 @@ public class ActivityService {
     if (updateDTO.getInterests() != null) {
       activity.setInterests(updateDTO.getInterests());
     }
+    if (updateDTO.getCoverImageUrl() != null) {
+      activity.setCoverImageUrl(updateDTO.getCoverImageUrl());
+    }
 
     Activity updatedActivity = activityRepository.save(activity);
     return mapToResponseDTO(updatedActivity);
@@ -402,6 +406,7 @@ public class ActivityService {
     dto.setCost(activity.getCost());
     dto.setMinAge(activity.getMinAge());
     dto.setInterests(activity.getInterests());
+    dto.setCoverImageUrl(activity.getCoverImageUrl());
 
     // Map creator user object
     UserSimpleResponse creatorResponse = new UserSimpleResponse();

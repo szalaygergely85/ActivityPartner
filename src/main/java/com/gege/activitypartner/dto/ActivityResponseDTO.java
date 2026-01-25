@@ -42,6 +42,9 @@ public class ActivityResponseDTO {
   // Activity Interests/Tags
   private List<String> interests;
 
+  // Cover Image
+  private String coverImageUrl; // User-selected cover image URL (null uses category default)
+
   // Creator Info
   private UserSimpleResponse creator;
 

@@ -32,6 +32,7 @@ public class CategoryService {
     category.setName(request.getName());
     category.setDescription(request.getDescription());
     category.setIcon(request.getIcon());
+    category.setImageResourceName(request.getImageResourceName());
     category.setIsActive(true);
     category.setActivityCount(0);
 
@@ -87,6 +88,10 @@ public class CategoryService {
 
     if (request.getIcon() != null) {
       category.setIcon(request.getIcon());
+    }
+
+    if (request.getImageResourceName() != null) {
+      category.setImageResourceName(request.getImageResourceName());
     }
 
     if (request.getIsActive() != null) {

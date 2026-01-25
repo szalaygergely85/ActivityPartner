@@ -61,4 +61,6 @@ public class ActivityRequestDTO {
 
   private List<String>
       interests; // Activity interests/tags (e.g., ["outdoor", "nature", "exercise"])
+
+  private String coverImageUrl; // Optional user-selected cover image URL
 }
