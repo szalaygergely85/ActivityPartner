@@ -53,6 +53,10 @@ public class ReportService {
             activityRepository
                 .findById(request.getReportedActivityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found"));
+        // Cannot report own activity
+        if (activity.getCreator().getId().equals(reporterId)) {
+          throw new IllegalArgumentException("Cannot report your own activity");
+        }
         report.setReportedActivity(activity);
         report.setReportedUser(activity.getCreator()); // Also track the activity creator
         break;
@@ -62,6 +66,10 @@ public class ReportService {
             messageRepository
                 .findById(request.getReportedMessageId())
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
+        // Cannot report own message
+        if (message.getUser().getId().equals(reporterId)) {
+          throw new IllegalArgumentException("Cannot report your own message");
+        }
         report.setReportedMessage(message);
         report.setReportedUser(message.getUser()); // Also track the message sender
         break;
@@ -71,6 +79,10 @@ public class ReportService {
             userRepository
                 .findById(request.getReportedUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        // Cannot report yourself
+        if (reportedUser.getId().equals(reporterId)) {
+          throw new IllegalArgumentException("Cannot report yourself");
+        }
         report.setReportedUser(reportedUser);
         break;
 
@@ -232,12 +244,14 @@ public class ReportService {
       case ACTIVITY:
         if (report.getReportedActivity() != null) {
           response.setReportedItemId(report.getReportedActivity().getId());
+          response.setReportedActivityId(report.getReportedActivity().getId());
           response.setReportedItemDescription(report.getReportedActivity().getTitle());
         }
         break;
       case MESSAGE:
         if (report.getReportedMessage() != null) {
           response.setReportedItemId(report.getReportedMessage().getId());
+          response.setReportedMessageId(report.getReportedMessage().getId());
           response.setReportedItemDescription(
               truncateText(report.getReportedMessage().getMessageText(), 50));
         }
@@ -245,6 +259,7 @@ public class ReportService {
       case USER:
         if (report.getReportedUser() != null) {
           response.setReportedItemId(report.getReportedUser().getId());
+          response.setReportedUserId(report.getReportedUser().getId());
           response.setReportedItemDescription(report.getReportedUser().getFullName());
         }
         break;

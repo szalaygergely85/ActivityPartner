@@ -16,6 +16,9 @@ public class ReportResponse {
   private String reporterName;
   private ReportType reportType;
   private Long reportedItemId;
+  private Long reportedUserId; // For USER reports
+  private Long reportedActivityId; // For ACTIVITY reports
+  private Long reportedMessageId; // For MESSAGE reports
   private String reportedItemDescription;
   private String reason;
   private ReportStatus status;

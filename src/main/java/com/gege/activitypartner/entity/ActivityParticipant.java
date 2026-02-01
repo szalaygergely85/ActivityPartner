@@ -12,7 +12,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Entity
 @Table(
     name = "activity_participants",
-    uniqueConstraints = @UniqueConstraint(columnNames = {"activity_id", "user_id"}))
+    uniqueConstraints = @UniqueConstraint(columnNames = {"activity_id", "user_id"}),
+    indexes = {
+      @Index(name = "idx_participant_activity", columnList = "activity_id"),
+      @Index(name = "idx_participant_user", columnList = "user_id"),
+      @Index(name = "idx_participant_status", columnList = "status"),
+      @Index(name = "idx_participant_user_status", columnList = "user_id, status")
+    })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

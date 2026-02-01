@@ -200,14 +200,23 @@ public class ActivityParticipantService {
     }
 
     // Validate status transition
-    if (participant.getStatus() != ParticipantStatus.INTERESTED) {
-      throw new InvalidParticipantActionException(
-          "Can only accept/decline users with INTERESTED status");
-    }
+    ParticipantStatus currentStatus = participant.getStatus();
 
-    if (newStatus != ParticipantStatus.ACCEPTED && newStatus != ParticipantStatus.DECLINED) {
+    if (currentStatus == ParticipantStatus.INTERESTED) {
+      // From INTERESTED: can accept or decline
+      if (newStatus != ParticipantStatus.ACCEPTED && newStatus != ParticipantStatus.DECLINED) {
+        throw new InvalidParticipantActionException(
+            "Creator can only ACCEPT or DECLINE interested users");
+      }
+    } else if (currentStatus == ParticipantStatus.ACCEPTED) {
+      // From ACCEPTED: can only remove (decline)
+      if (newStatus != ParticipantStatus.DECLINED) {
+        throw new InvalidParticipantActionException(
+            "Creator can only remove (DECLINE) accepted users");
+      }
+    } else {
       throw new InvalidParticipantActionException(
-          "Creator can only ACCEPT or DECLINE interested users");
+          "Cannot change status of participant with status: " + currentStatus);
     }
 
     // Check available spots for ACCEPTED

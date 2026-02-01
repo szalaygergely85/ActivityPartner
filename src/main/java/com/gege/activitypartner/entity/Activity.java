@@ -13,7 +13,17 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "activities")
+@Table(
+    name = "activities",
+    indexes = {
+      @Index(name = "idx_activity_status", columnList = "status"),
+      @Index(name = "idx_activity_date", columnList = "activityDate"),
+      @Index(name = "idx_activity_status_date", columnList = "status, activityDate"),
+      @Index(name = "idx_activity_creator", columnList = "creator_id"),
+      @Index(name = "idx_activity_category", columnList = "category"),
+      @Index(name = "idx_activity_location", columnList = "latitude, longitude"),
+      @Index(name = "idx_activity_trending", columnList = "trending")
+    })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -101,9 +111,14 @@ public class Activity {
   // Utility method to calculate available spots
   @Transient
   public Integer getAvailableSpots() {
-    long joinedCount =
-        participants.stream().filter(p -> p.getStatus() == ParticipantStatus.JOINED).count();
-    return totalSpots - (int) joinedCount;
+    long reservedCount =
+        participants.stream()
+            .filter(
+                p ->
+                    p.getStatus() == ParticipantStatus.ACCEPTED
+                        || p.getStatus() == ParticipantStatus.JOINED)
+            .count();
+    return totalSpots - (int) reservedCount;
   }
 
   // Check if activity is full

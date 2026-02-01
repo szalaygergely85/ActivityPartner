@@ -14,7 +14,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = {
+      @Index(name = "idx_user_email", columnList = "email"),
+      @Index(name = "idx_user_active", columnList = "is_active"),
+      @Index(name = "idx_user_email_active", columnList = "email, is_active")
+    })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
