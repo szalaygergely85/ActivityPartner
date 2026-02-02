@@ -41,5 +41,6 @@ spec:
           secret:
             secretName: firebase-credentials
         - name: image-storage-af
-          persistentVolumeClaim:
-            claimName: activity-finder-pvc
+          hostPath:
+            path: /data/activity-finder/images
+            type: DirectoryOrCreate
