@@ -53,14 +53,26 @@ public class SecurityConfig {
                 auth
                     // Public endpoints - no authentication required
                     .requestMatchers(
-                        "/api/users/register", "/api/users/login", "/api/users/refresh-token")
+                        "/api/users/register",
+                        "/api/users/login",
+                        "/api/users/refresh-token",
+                        "/api/users/web-logout")
                     .permitAll()
                     .requestMatchers("/api/categories/**")
                     .permitAll() // Categories are public for browsing
+                    .requestMatchers(
+                        "/api/activities",
+                        "/api/activities/trending",
+                        "/api/activities/nearby",
+                        "/api/activities/category/**",
+                        "/api/activities/{id}")
+                    .permitAll() // Activities are public for browsing
                     .requestMatchers("/api/covers/**")
                     .permitAll() // Cover images are public for activity creation
-                    .requestMatchers("/privacy", "/terms", "/support", "/delete-account")
+                    .requestMatchers("/", "/privacy", "/terms", "/support", "/delete-account", "/login", "/register")
                     .permitAll() // Static pages are public
+                    .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico")
+                    .permitAll() // Static resources are public
                     .requestMatchers("/api/users/request-deletion")
                     .permitAll() // Account deletion request is public (Google Play compliance)
                     .requestMatchers("/api/crash-logs")

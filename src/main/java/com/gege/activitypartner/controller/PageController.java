@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PageController {
 
+  @GetMapping("/")
+  public String home() {
+    return "index";
+  }
+
   @GetMapping("/privacy")
   public String privacy() {
     return "privacy";
@@ -33,5 +38,15 @@ public class PageController {
   @GetMapping("/admin")
   public String admin() {
     return "admin";
+  }
+
+  @GetMapping("/login")
+  public String login() {
+    return "login";
+  }
+
+  @GetMapping("/register")
+  public String register() {
+    return "register";
   }
 }

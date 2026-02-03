@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>Sign Up - Vivento</title>
+    <link rel="icon" type="image/webp" href="/images/vivento.svg"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="/css/app.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7ff2",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#22c55e",
+                        "background-dark": "#0a0f14",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-dark text-white min-h-screen flex items-center justify-center bg-gradient-custom relative overflow-x-hidden overflow-y-auto">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Register Section -->
+    <div class="w-full max-w-[520px] flex flex-col items-center justify-center px-4 sm:px-6 py-8 relative z-10">
+        <div class="mb-6 sm:mb-8 flex items-center gap-2 group cursor-default">
+            <img src="/images/vivento.svg" alt="Vivento" class="app-logo shadow-lg shadow-primary/20"/>
+            <span class="text-2xl font-bold tracking-tight text-white/90">Vivento</span>
+        </div>
+
+        <div class="glass-card w-full rounded-2xl p-6 sm:p-10 text-center">
+            <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/5 flex items-center justify-center mb-5 sm:mb-6 border border-white/10">
+                <span class="material-symbols-outlined text-3xl sm:text-4xl text-primary">person_add</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">Create Account</h1>
+            <p class="text-slate-400 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 max-w-sm mx-auto">
+                Join Vivento and start discovering activities near you.
+            </p>
+
+            <form id="register-form" class="space-y-4">
+                <!-- Full Name -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">badge</span>
+                    </div>
+                    <input
+                        id="fullName"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
+                        placeholder="Full Name"
+                        type="text"
+                        autocomplete="name"
+                        minlength="2"
+                        maxlength="100"
+                        required
+                    />
+                </div>
+
+                <!-- Email -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">mail</span>
+                    </div>
+                    <input
+                        id="email"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
+                        placeholder="Email"
+                        type="email"
+                        autocomplete="email"
+                        inputmode="email"
+                        required
+                    />
+                </div>
+
+                <!-- Birth Date -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">cake</span>
+                    </div>
+                    <input
+                        id="birthDate"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base appearance-none"
+                        type="date"
+                        required
+                    />
+                    <label for="birthDate" class="absolute left-12 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none transition-all" id="birthDate-label">
+                        Birth Date
+                    </label>
+                </div>
+
+                <!-- Password -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">lock</span>
+                    </div>
+                    <input
+                        id="password"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-12 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
+                        placeholder="Password (min 6 characters)"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="6"
+                        required
+                    />
+                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">visibility</span>
+                    </button>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">lock_reset</span>
+                    </div>
+                    <input
+                        id="confirmPassword"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 sm:py-4 pl-12 pr-12 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base"
+                        placeholder="Confirm Password"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="6"
+                        required
+                    />
+                    <button type="button" id="toggle-confirm-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 transition-colors">
+                        <span class="material-symbols-outlined text-xl sm:text-2xl">visibility</span>
+                    </button>
+                </div>
+
+                <!-- Password strength indicator -->
+                <div id="password-strength" class="hidden">
+                    <div class="flex gap-1 mb-1">
+                        <div class="h-1 flex-1 rounded-full bg-white/10" id="strength-1"></div>
+                        <div class="h-1 flex-1 rounded-full bg-white/10" id="strength-2"></div>
+                        <div class="h-1 flex-1 rounded-full bg-white/10" id="strength-3"></div>
+                        <div class="h-1 flex-1 rounded-full bg-white/10" id="strength-4"></div>
+                    </div>
+                    <p id="strength-text" class="text-xs text-slate-500 text-left"></p>
+                </div>
+
+                <div id="register-error" class="hidden text-danger text-sm py-2 px-4 bg-danger/10 rounded-xl text-left"></div>
+
+                <button id="submit-btn" class="glow-button w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 sm:py-4 rounded-xl text-base sm:text-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:cursor-not-allowed mt-6" type="submit">
+                    <span id="btn-text">Create Account</span>
+                    <span id="btn-spinner" class="hidden">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                    <span id="btn-arrow" class="material-symbols-outlined text-xl">arrow_forward</span>
+                </button>
+
+                <p class="text-slate-500 text-xs mt-4">
+                    By creating an account, you agree to our
+                    <a href="/terms" class="text-primary hover:underline">Terms of Service</a>
+                    and
+                    <a href="/privacy" class="text-primary hover:underline">Privacy Policy</a>.
+                </p>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-white/10">
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Already have an account?
+                    <a href="/login" class="text-primary hover:text-primary/80 font-semibold transition-colors">Sign in</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Download App Section -->
+        <div class="mt-6 sm:mt-8 w-full glass-card rounded-2xl p-5 text-center">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary text-xl">smartphone</span>
+                <h3 class="text-base font-bold text-white">Get the App</h3>
+            </div>
+            <p class="text-slate-400 text-xs mb-3">Download for the best experience.</p>
+
+            <div class="flex flex-col gap-2 max-w-xs mx-auto">
+                <!-- Android Download -->
+                <a href="https://play.google.com/store/apps/details?id=com.gege.vivento" target="_blank" rel="noopener"
+                   class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.523 2.047a.5.5 0 0 0-.684.182l-1.97 3.41a8.968 8.968 0 0 0-5.742 0l-1.97-3.41a.5.5 0 0 0-.866.5l1.918 3.322A8.978 8.978 0 0 0 3 13.5V14h18v-.5a8.978 8.978 0 0 0-5.209-7.449l1.918-3.322a.5.5 0 0 0-.186-.682zM7 11a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm10 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM3 15.5v5A1.5 1.5 0 0 0 4.5 22h1A1.5 1.5 0 0 0 7 20.5V15H3.5a.5.5 0 0 0-.5.5zm18 0a.5.5 0 0 0-.5-.5H17v5.5a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-5zM7 15v6.5A1.5 1.5 0 0 0 8.5 23h7a1.5 1.5 0 0 0 1.5-1.5V15H7z" fill="#3DDC84"/>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Google Play</span>
+                </a>
+
+                <!-- iOS Coming Soon -->
+                <div class="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl opacity-60 cursor-not-allowed">
+                    <svg class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    <span class="text-sm font-medium text-slate-400">iOS Soon</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="mt-6 text-slate-500 text-xs sm:text-sm font-medium text-center">
+            &copy; 2026 Vivento. All rights reserved.
+        </p>
+    </div>
+
+    <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-30 pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[150px]"></div>
+    </div>
+
+    <script>
+        // Hide birth date label when value is set
+        const birthDateInput = document.getElementById('birthDate');
+        const birthDateLabel = document.getElementById('birthDate-label');
+
+        function updateBirthDateLabel() {
+            if (birthDateInput.value) {
+                birthDateLabel.classList.add('hidden');
+            } else {
+                birthDateLabel.classList.remove('hidden');
+            }
+        }
+
+        birthDateInput.addEventListener('change', updateBirthDateLabel);
+        birthDateInput.addEventListener('focus', () => birthDateLabel.classList.add('hidden'));
+        birthDateInput.addEventListener('blur', updateBirthDateLabel);
+
+        // Set max date to 13 years ago (minimum age)
+        const today = new Date();
+        const minAge = 13;
+        const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+        birthDateInput.max = maxDate.toISOString().split('T')[0];
+
+        // Toggle password visibility
+        function setupPasswordToggle(inputId, toggleId) {
+            const input = document.getElementById(inputId);
+            const toggle = document.getElementById(toggleId);
+
+            toggle.addEventListener('click', () => {
+                const icon = toggle.querySelector('.material-symbols-outlined');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = 'visibility_off';
+                } else {
+                    input.type = 'password';
+                    icon.textContent = 'visibility';
+                }
+            });
+        }
+
+        setupPasswordToggle('password', 'toggle-password');
+        setupPasswordToggle('confirmPassword', 'toggle-confirm-password');
+
+        // Password strength checker
+        const passwordInput = document.getElementById('password');
+        const strengthDiv = document.getElementById('password-strength');
+        const strengthText = document.getElementById('strength-text');
+
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+
+            if (password.length === 0) {
+                strengthDiv.classList.add('hidden');
+                return;
+            }
+
+            strengthDiv.classList.remove('hidden');
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) strength++;
+
+            const colors = ['bg-danger', 'bg-warning', 'bg-warning', 'bg-success'];
+            const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById('strength-' + i);
+                bar.className = 'h-1 flex-1 rounded-full';
+                if (i <= strength) {
+                    bar.classList.add(colors[strength - 1]);
+                } else {
+                    bar.classList.add('bg-white/10');
+                }
+            }
+
+            strengthText.textContent = texts[strength - 1] || '';
+            strengthText.className = 'text-xs text-left ' + (strength <= 1 ? 'text-danger' : strength <= 2 ? 'text-warning' : 'text-success');
+        });
+
+        // Form submission
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const birthDate = document.getElementById('birthDate').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('register-error');
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const btnArrow = document.getElementById('btn-arrow');
+
+            // Validation
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password must be at least 6 characters';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Creating account...';
+            btnSpinner.classList.remove('hidden');
+            btnArrow.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email, password, birthDate })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Cookies are automatically set by the server
+                    // Redirect to home
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = data.message || data.error || 'Registration failed. Please try again.';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnText.textContent = 'Create Account';
+                btnSpinner.classList.add('hidden');
+                btnArrow.classList.remove('hidden');
+            }
+        });
+
+        // Check if already logged in (userId cookie is readable by JS)
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        if (getCookie('userId')) {
+            // Already logged in, redirect to home
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
