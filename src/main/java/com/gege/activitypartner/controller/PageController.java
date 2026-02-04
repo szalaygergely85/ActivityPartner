@@ -49,4 +49,9 @@ public class PageController {
   public String register() {
     return "register";
   }
+
+  @GetMapping("/create-activity")
+  public String createActivity() {
+    return "create-activity";
+  }
 }

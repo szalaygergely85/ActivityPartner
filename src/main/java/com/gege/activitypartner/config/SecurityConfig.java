@@ -69,7 +69,15 @@ public class SecurityConfig {
                     .permitAll() // Activities are public for browsing
                     .requestMatchers("/api/covers/**")
                     .permitAll() // Cover images are public for activity creation
-                    .requestMatchers("/", "/privacy", "/terms", "/support", "/delete-account", "/login", "/register")
+                    .requestMatchers(
+                        "/",
+                        "/privacy",
+                        "/terms",
+                        "/support",
+                        "/delete-account",
+                        "/login",
+                        "/register",
+                        "/create-activity")
                     .permitAll() // Static pages are public
                     .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico")
                     .permitAll() // Static resources are public

@@ -9,9 +9,11 @@
 
 body {
     font-family: "Plus Jakarta Sans", sans-serif;
-    min-height: 100dvh;
+    min-height: max(884px, 100dvh);
     margin: 0;
     padding: 0;
+    background: var(--color-background-dark);
+    color: white;
 }
 
 /* Safe area padding for mobile devices */

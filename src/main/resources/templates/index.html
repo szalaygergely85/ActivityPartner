@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
     <title>Vivento - Discover Activities</title>
-    <link rel="icon" type="image/webp" href="/images/vivento.svg"/>
+    <link rel="icon" type="image/svg+xml" href="/images/vivento.svg"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -21,7 +21,9 @@
                         "danger": "#ef4444",
                         "warning": "#f59e0b",
                         "success": "#22c55e",
+                        "emerald": "#10b981",
                         "background-dark": "#0a0f14",
+                        "surface-dark": "#131b24",
                     },
                     fontFamily: {
                         "display": ["Plus Jakarta Sans", "sans-serif"]
@@ -31,208 +33,420 @@
             },
         }
     </script>
+    <style>
+        /* Bottom nav safe area */
+        .pb-safe {
+            padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
+        }
+        @media (min-width: 640px) {
+            .pb-safe {
+                padding-bottom: 24px;
+            }
+        }
+        .bottom-nav {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        /* Filter button styles */
+        .filter-btn { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+        .filter-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .filter-btn.active { background: #0d7ff2; color: white; }
+        /* Nav styles */
+        .nav-item { color: #64748b; }
+        .nav-item.active { color: #0d7ff2; }
+        .nav-item .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
+        .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+        /* Desktop nav */
+        @media (min-width: 640px) {
+            body { padding-left: 80px; }
+        }
+    </style>
 </head>
-<body class="bg-background-dark text-white min-h-screen bg-gradient-custom relative">
-    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+<body class="bg-gradient-custom text-white">
+    <!-- Desktop Sidebar Navigation -->
+    <nav class="hidden sm:flex fixed left-0 top-0 h-full w-20 bg-surface-dark border-r border-white/10 flex-col items-center py-6 z-50">
+        <a href="/" class="mb-8">
+            <img src="/images/vivento.svg" alt="Vivento" class="w-10 h-10"/>
+        </a>
+        <div class="flex-1 flex flex-col items-center gap-2">
+            <a href="/" class="nav-item active w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Explore">
+                <span class="material-symbols-outlined text-2xl">explore</span>
+            </a>
+            <a href="/my-activities" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="My Activities">
+                <span class="material-symbols-outlined text-2xl">list_alt</span>
+            </a>
+            <a href="/joined" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Joined">
+                <span class="material-symbols-outlined text-2xl">check_circle</span>
+            </a>
+            <a href="/notifications" class="nav-item relative w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Notifications">
+                <span class="material-symbols-outlined text-2xl">notifications</span>
+                <span id="notif-badge-desktop" class="hidden absolute top-2 right-2 w-2 h-2 bg-danger rounded-full"></span>
+            </a>
+        </div>
+        <a href="/profile" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Profile">
+            <span class="material-symbols-outlined text-2xl">person</span>
+        </a>
+    </nav>
 
-    <!-- Header -->
-    <header class="sticky top-0 z-50 bg-background-dark/80 backdrop-blur-xl border-b border-white/5">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-            <div class="flex items-center justify-between gap-4">
-                <!-- Logo -->
-                <a href="/" class="flex items-center gap-2 shrink-0">
-                    <img src="/images/vivento.svg" alt="Vivento" class="app-logo-sm sm:app-logo shadow-lg shadow-primary/20"/>
-                    <span class="text-xl sm:text-2xl font-bold tracking-tight text-white/90 hidden sm:block">Vivento</span>
-                </a>
-
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-md mx-4 hidden sm:block">
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
-                        <input
-                            id="search-input"
-                            type="text"
-                            placeholder="Search activities..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                        />
-                    </div>
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col max-w-2xl mx-auto">
+        <!-- Sticky Header -->
+        <header class="sticky top-0 z-40 bg-background-dark/95 backdrop-blur-lg border-b border-white/5">
+            <!-- Top Row: Title + Buttons -->
+            <div class="flex items-center justify-between px-5 py-4">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Discover</h1>
+                <div class="flex items-center gap-2">
+                    <button id="btn-filter" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-white/10 transition-colors" title="Filter">
+                        <span class="material-symbols-outlined text-xl text-white">tune</span>
+                    </button>
+                    <button id="btn-search" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-white/10 transition-colors" title="Search">
+                        <span class="material-symbols-outlined text-xl text-white">search</span>
+                    </button>
+                    <button id="btn-logout" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-danger/20 hover:border-danger/50 transition-colors" title="Sign out">
+                        <span class="material-symbols-outlined text-xl text-white">logout</span>
+                    </button>
                 </div>
+            </div>
 
-                <!-- User Actions -->
-                <div class="flex items-center gap-2 sm:gap-3">
-                    <button id="mobile-search-btn" class="sm:hidden p-2 hover:bg-white/10 rounded-xl transition-colors">
-                        <span class="material-symbols-outlined text-slate-400">search</span>
-                    </button>
+            <!-- Search Bar (Hidden by default) -->
+            <div id="search-container" class="hidden px-5 pb-4">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
+                    <input id="search-input" type="text" placeholder="Find events, hobbies..."
+                        class="w-full bg-surface-dark border border-slate-800 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"/>
+                </div>
+            </div>
 
-                    <!-- Location Button -->
-                    <button id="location-btn" class="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all text-sm">
-                        <span class="material-symbols-outlined text-lg">location_on</span>
-                        <span id="location-text" class="hidden md:inline">Enable location</span>
-                    </button>
+        </header>
 
-                    <!-- Auth Buttons (shown when logged out) -->
-                    <div id="auth-buttons" class="hidden flex items-center gap-2">
-                        <a href="/login" class="px-3 sm:px-4 py-2 text-slate-400 hover:text-white font-medium transition-colors text-sm">
-                            Sign in
-                        </a>
-                        <a href="/register" class="px-3 sm:px-4 py-2 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all text-sm">
-                            Sign up
-                        </a>
-                    </div>
+        <!-- Main Content -->
+        <main class="flex-1 px-5 pb-safe">
+            <!-- Section Header -->
+            <div class="flex items-center justify-between py-4">
+                <h2 class="text-lg font-bold text-white">Upcoming Nearby</h2>
+                <button class="text-primary text-xs font-bold tracking-wide hover:text-primary/80 transition-colors">SEE ALL</button>
+            </div>
 
-                    <!-- User Menu (shown when logged in) -->
-                    <div id="user-menu" class="hidden relative">
-                        <button id="user-menu-btn" class="flex items-center gap-2 p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition-colors">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-primary text-lg">person</span>
-                            </div>
-                            <span class="material-symbols-outlined text-slate-400 text-lg hidden sm:block">expand_more</span>
-                        </button>
-                        <div id="user-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 glass-card rounded-xl p-2 border border-white/10">
-                            <a href="/my-activities" class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-lg">event</span>
-                                My Activities
-                            </a>
-                            <a href="/profile" class="flex items-center gap-3 px-3 py-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-lg">person</span>
-                                Profile
-                            </a>
-                            <hr class="my-2 border-white/10">
-                            <button onclick="logout()" class="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
-                                <span class="material-symbols-outlined text-lg">logout</span>
-                                Sign out
-                            </button>
-                        </div>
+            <!-- Activities List -->
+            <div id="activities-list" class="space-y-6">
+                <!-- Loading skeleton -->
+                <div class="activity-skeleton bg-surface-dark rounded-3xl border border-slate-800 overflow-hidden animate-pulse">
+                    <div class="h-56 bg-slate-800"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-slate-800 rounded w-1/4"></div>
+                        <div class="h-6 bg-slate-800 rounded w-3/4"></div>
+                        <div class="h-4 bg-slate-800 rounded w-1/2"></div>
+                        <div class="h-4 bg-slate-800 rounded w-1/3"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mobile Search (expandable) -->
-            <div id="mobile-search" class="hidden sm:hidden mt-3">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
-                    <input
-                        id="mobile-search-input"
-                        type="text"
-                        placeholder="Search activities..."
-                        class="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
-                    />
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden py-12 flex justify-center">
+                <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden py-16 text-center">
+                <div class="text-6xl mb-4">🔍</div>
+                <h3 class="text-xl font-bold text-white mb-2">No activities found</h3>
+                <p class="text-slate-500 text-sm max-w-xs mx-auto">Try adjusting your filters or check back later for new activities.</p>
+            </div>
+        </main>
+
+        <!-- FAB - Create Activity -->
+        <button id="fab-create" class="fixed bottom-24 sm:bottom-8 right-5 w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 transition-all active:scale-95 z-30">
+            <span class="material-symbols-outlined text-white text-2xl">add</span>
+        </button>
+
+        <!-- Bottom Navigation (Mobile Only) -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-surface-dark border-t border-white/10 z-50 sm:hidden bottom-nav">
+            <div class="max-w-2xl mx-auto flex items-center justify-around py-2">
+                <a href="/" class="nav-item active flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">explore</span>
+                    <span class="text-[10px] mt-1 font-medium">Explore</span>
+                </a>
+                <a href="/my-activities" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">list_alt</span>
+                    <span class="text-[10px] mt-1 font-medium">Mine</span>
+                </a>
+                <a href="/joined" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                    <span class="text-[10px] mt-1 font-medium">Joined</span>
+                </a>
+                <a href="/notifications" class="nav-item relative flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">notifications</span>
+                    <span id="notif-badge" class="hidden absolute top-1 right-3 w-2 h-2 bg-danger rounded-full"></span>
+                    <span class="text-[10px] mt-1 font-medium">Alerts</span>
+                </a>
+                <a href="/profile" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">person</span>
+                    <span class="text-[10px] mt-1 font-medium">Profile</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filter-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="filter-backdrop"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-surface-dark rounded-t-3xl max-h-[80vh] overflow-y-auto sm:max-w-lg sm:mx-auto sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">Filters</h2>
+                    <button id="close-filter" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white">close</span>
+                    </button>
                 </div>
+                <!-- Distance -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">Distance</label>
+                    <div class="flex gap-2">
+                        <button class="filter-btn active flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="5">5 km</button>
+                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="10">10 km</button>
+                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="25">25 km</button>
+                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="50">50 km</button>
+                    </div>
+                </div>
+                <!-- When -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">When</label>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="anytime">Anytime</button>
+                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="today">Today</button>
+                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="tomorrow">Tomorrow</button>
+                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="week">This Week</button>
+                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="weekend">Weekend</button>
+                    </div>
+                </div>
+                <!-- Sort -->
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-slate-300 mb-3">Sort By</label>
+                    <div class="flex gap-2">
+                        <button class="filter-btn active flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="date">Date</button>
+                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="distance">Distance</button>
+                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="popular">Popular</button>
+                    </div>
+                </div>
+                <button id="apply-filters" class="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors">Apply Filters</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 relative z-10">
-
-        <!-- Categories Section -->
-        <section class="mb-8 sm:mb-10">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg sm:text-xl font-bold text-white">Categories</h2>
-            </div>
-            <div id="categories-container" class="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
-                <!-- Categories loaded dynamically -->
-                <div class="flex gap-3">
-                    <div class="w-20 h-24 rounded-xl bg-white/5 animate-pulse"></div>
-                    <div class="w-20 h-24 rounded-xl bg-white/5 animate-pulse"></div>
-                    <div class="w-20 h-24 rounded-xl bg-white/5 animate-pulse"></div>
-                    <div class="w-20 h-24 rounded-xl bg-white/5 animate-pulse"></div>
+    <!-- Activity Card Template -->
+    <template id="activity-card-template">
+        <article class="activity-card bg-surface-dark rounded-3xl border border-slate-800 overflow-hidden cursor-pointer hover:border-slate-700 transition-all">
+            <div class="relative h-56 overflow-hidden">
+                <img src="" alt="" class="activity-image w-full h-full object-cover"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                <div class="expired-badge hidden absolute top-4 left-4 px-3 py-1.5 bg-danger/20 border border-danger/30 rounded-lg">
+                    <span class="text-danger text-xs font-bold">Expired</span>
                 </div>
             </div>
-        </section>
-
-        <!-- Trending Section -->
-        <section class="mb-8 sm:mb-10">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-warning">local_fire_department</span>
-                    <h2 class="text-lg sm:text-xl font-bold text-white">Trending</h2>
+            <div class="p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="activity-category text-emerald text-sm font-bold uppercase"></span>
+                    <span class="activity-distance text-primary text-sm font-bold"></span>
                 </div>
-                <a href="/activities?filter=trending" class="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
-                    See all
-                    <span class="material-symbols-outlined text-lg">chevron_right</span>
-                </a>
-            </div>
-            <div id="trending-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Trending activities loaded dynamically -->
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse"></div>
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse hidden sm:block"></div>
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse hidden lg:block"></div>
-            </div>
-        </section>
-
-        <!-- Nearby Section -->
-        <section class="mb-8 sm:mb-10" id="nearby-section">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-success">near_me</span>
-                    <h2 class="text-lg sm:text-xl font-bold text-white">Nearby</h2>
-                    <span id="nearby-radius" class="text-slate-500 text-sm hidden"></span>
+                <h3 class="activity-title text-xl font-bold text-white mb-2 line-clamp-2"></h3>
+                <div class="flex items-center gap-1.5 text-slate-400 text-base mb-2">
+                    <span class="activity-date"></span>
+                    <span>•</span>
+                    <span class="activity-time"></span>
                 </div>
-                <a href="/activities?filter=nearby" class="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
-                    See all
-                    <span class="material-symbols-outlined text-lg">chevron_right</span>
-                </a>
-            </div>
-            <div id="nearby-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Nearby activities or location prompt -->
-                <div id="location-prompt" class="col-span-full glass-card rounded-2xl p-8 text-center">
-                    <div class="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <span class="material-symbols-outlined text-3xl text-primary">location_on</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Enable Location</h3>
-                    <p class="text-slate-400 text-sm mb-4 max-w-sm mx-auto">Allow location access to discover activities happening near you.</p>
-                    <button onclick="requestLocation()" class="px-6 py-2.5 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all">
-                        Enable Location
-                    </button>
+                <div class="flex items-center gap-1 text-slate-400 text-sm mb-4">
+                    <span class="material-symbols-outlined text-base">location_on</span>
+                    <span class="activity-location line-clamp-1"></span>
+                </div>
+                <div class="border-t border-slate-800 mb-4"></div>
+                <div class="flex items-center justify-between">
+                    <div class="avatar-stack flex -space-x-2"></div>
+                    <span class="activity-spots text-primary text-sm font-bold"></span>
                 </div>
             </div>
-        </section>
-
-        <!-- All Activities Section -->
-        <section>
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">explore</span>
-                    <h2 class="text-lg sm:text-xl font-bold text-white">All Activities</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <select id="sort-select" class="bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
-                        <option value="date">Date</option>
-                        <option value="distance">Distance</option>
-                        <option value="popular">Popular</option>
-                    </select>
-                </div>
-            </div>
-            <div id="activities-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- All activities loaded dynamically -->
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse"></div>
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse"></div>
-                <div class="h-64 rounded-2xl bg-white/5 animate-pulse"></div>
-            </div>
-            <div id="no-activities" class="hidden text-center py-16">
-                <div class="mx-auto w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/10">
-                    <span class="material-symbols-outlined text-4xl text-slate-500">search_off</span>
-                </div>
-                <p class="text-slate-400 text-lg">No activities found</p>
-                <p class="text-slate-500 text-sm mt-2">Try adjusting your filters or check back later</p>
-            </div>
-            <div id="load-more-container" class="hidden text-center mt-8">
-                <button id="load-more-btn" class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all">
-                    Load More
-                </button>
-            </div>
-        </section>
-    </main>
-
-    <!-- Floating Action Button (Create Activity) -->
-    <button id="fab-create" class="hidden fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 z-40">
-        <span class="material-symbols-outlined text-2xl">add</span>
-    </button>
+        </article>
+    </template>
 
     <script>
-        // Cookie helper
+        // State
+        let activities = [];
+        let searchQuery = '';
+        let filters = { distance: 5, when: 'anytime', sort: 'date' };
+
+        // DOM
+        const activitiesList = document.getElementById('activities-list');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const searchContainer = document.getElementById('search-container');
+        const searchInput = document.getElementById('search-input');
+        const filterModal = document.getElementById('filter-modal');
+        const cardTemplate = document.getElementById('activity-card-template');
+
+        const categoryColors = {
+            'sports': 'text-emerald', 'music': 'text-purple-400', 'art': 'text-pink-400',
+            'social': 'text-yellow-400', 'outdoor': 'text-green-400', 'food': 'text-orange-400',
+            'gaming': 'text-red-400', 'technology': 'text-blue-400', 'default': 'text-emerald'
+        };
+
+        // Toggle search
+        document.getElementById('btn-search').addEventListener('click', () => {
+            searchContainer.classList.toggle('hidden');
+            if (!searchContainer.classList.contains('hidden')) searchInput.focus();
+        });
+
+        // Search
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = e.target.value.trim();
+                loadActivities();
+            }, 300);
+        });
+
+        // Filter modal
+        document.getElementById('btn-filter').addEventListener('click', () => filterModal.classList.remove('hidden'));
+        document.getElementById('filter-backdrop').addEventListener('click', () => filterModal.classList.add('hidden'));
+        document.getElementById('close-filter').addEventListener('click', () => filterModal.classList.add('hidden'));
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn[data-km]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-km]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filters.distance = parseInt(btn.dataset.km);
+            });
+        });
+        document.querySelectorAll('.filter-btn[data-when]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-when]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filters.when = btn.dataset.when;
+            });
+        });
+        document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-sort]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filters.sort = btn.dataset.sort;
+            });
+        });
+        document.getElementById('apply-filters').addEventListener('click', () => {
+            filterModal.classList.add('hidden');
+            loadActivities();
+        });
+
+        // FAB
+        document.getElementById('fab-create').addEventListener('click', () => {
+            window.location.href = '/create-activity';
+        });
+
+        // Sign out
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/users/web-logout', { method: 'POST' });
+            } catch (e) {}
+            document.cookie = 'userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/login';
+        });
+
+        // Helpers
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const [hours, minutes] = timeStr.split(':');
+            const date = new Date();
+            date.setHours(parseInt(hours), parseInt(minutes));
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        // Create card
+        function createActivityCard(activity) {
+            const clone = cardTemplate.content.cloneNode(true);
+            const card = clone.querySelector('.activity-card');
+
+            const img = card.querySelector('.activity-image');
+            img.src = activity.coverImage || activity.coverImageUrl || activity.imageUrl || '/images/activity-default.jpg';
+            img.alt = activity.title;
+            img.onerror = () => img.src = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop';
+
+            if (activity.expired) card.querySelector('.expired-badge').classList.remove('hidden');
+
+            const categoryEl = card.querySelector('.activity-category');
+            categoryEl.textContent = activity.category || 'Activity';
+            const catKey = (activity.category || '').toLowerCase();
+            categoryEl.className = `activity-category text-sm font-bold uppercase ${categoryColors[catKey] || categoryColors.default}`;
+
+            card.querySelector('.activity-distance').textContent = activity.distance ? `${activity.distance.toFixed(1)} km` : '';
+            card.querySelector('.activity-title').textContent = activity.title;
+            card.querySelector('.activity-date').textContent = formatDate(activity.date || activity.activityDate || activity.startDate);
+            card.querySelector('.activity-time').textContent = formatTime(activity.time || activity.startTime);
+            card.querySelector('.activity-location').textContent = activity.location || activity.address || 'Location TBD';
+
+            const curr = activity.currentParticipants || activity.participantCount || 0;
+            const max = activity.maxParticipants || activity.spots || 0;
+            card.querySelector('.activity-spots').textContent = `${curr}/${max} spots`;
+
+            const avatarStack = card.querySelector('.avatar-stack');
+            if (activity.participants?.length > 0) {
+                const maxAv = Math.min(3, activity.participants.length);
+                for (let i = 0; i < maxAv; i++) {
+                    const av = document.createElement('div');
+                    av.className = 'w-8 h-8 rounded-full bg-slate-600 border-2 border-surface-dark flex items-center justify-center text-xs font-bold text-white';
+                    const name = activity.participants[i].name || activity.participants[i].fullName || '?';
+                    av.textContent = name.charAt(0).toUpperCase();
+                    avatarStack.appendChild(av);
+                }
+                if (activity.participants.length > 3) {
+                    const more = document.createElement('div');
+                    more.className = 'w-8 h-8 rounded-full bg-primary/20 border-2 border-surface-dark flex items-center justify-center text-xs font-bold text-primary';
+                    more.textContent = `+${activity.participants.length - 3}`;
+                    avatarStack.appendChild(more);
+                }
+            }
+
+            card.addEventListener('click', () => window.location.href = `/activity/${activity.id}`);
+            return card;
+        }
+
+        // Load activities
+        async function loadActivities() {
+            loadingState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            activitiesList.innerHTML = '';
+
+            try {
+                const params = new URLSearchParams();
+                if (searchQuery) params.append('search', searchQuery);
+                params.append('distance', filters.distance);
+                params.append('sort', filters.sort);
+                if (filters.when !== 'anytime') params.append('when', filters.when);
+
+                const response = await fetch(`/api/activities?${params}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    activities = Array.isArray(data) ? data : (data.content || []);
+
+                    if (activities.length === 0) {
+                        emptyState.classList.remove('hidden');
+                    } else {
+                        activities.forEach(act => activitiesList.appendChild(createActivityCard(act)));
+                    }
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                emptyState.classList.remove('hidden');
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        // Auth check
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
@@ -240,423 +454,10 @@
             return null;
         }
 
-        // State
-        let isLoggedIn = !!getCookie('userId');
-        let userLocation = null;
-        let selectedCategory = null;
-        let activities = [];
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Redirect to login if not logged in
-            if (!isLoggedIn) {
-                window.location.href = '/login';
-                return;
-            }
-
-            updateAuthUI();
-            loadCategories();
-            loadTrendingActivities();
-            loadAllActivities();
-            checkSavedLocation();
-            setupEventListeners();
-        });
-
-        function updateAuthUI() {
-            const authButtons = document.getElementById('auth-buttons');
-            const userMenu = document.getElementById('user-menu');
-            const fabCreate = document.getElementById('fab-create');
-
-            if (isLoggedIn) {
-                authButtons.classList.add('hidden');
-                userMenu.classList.remove('hidden');
-                fabCreate.classList.remove('hidden');
-                fabCreate.classList.add('flex');
-            } else {
-                authButtons.classList.remove('hidden');
-                authButtons.classList.add('flex');
-                userMenu.classList.add('hidden');
-                fabCreate.classList.add('hidden');
-            }
-        }
-
-        function setupEventListeners() {
-            // User menu toggle
-            const userMenuBtn = document.getElementById('user-menu-btn');
-            const userDropdown = document.getElementById('user-dropdown');
-
-            userMenuBtn?.addEventListener('click', () => {
-                userDropdown.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!userMenuBtn?.contains(e.target) && !userDropdown?.contains(e.target)) {
-                    userDropdown?.classList.add('hidden');
-                }
-            });
-
-            // Mobile search toggle
-            const mobileSearchBtn = document.getElementById('mobile-search-btn');
-            const mobileSearch = document.getElementById('mobile-search');
-
-            mobileSearchBtn?.addEventListener('click', () => {
-                mobileSearch.classList.toggle('hidden');
-                if (!mobileSearch.classList.contains('hidden')) {
-                    document.getElementById('mobile-search-input').focus();
-                }
-            });
-
-            // Search functionality
-            const searchInput = document.getElementById('search-input');
-            const mobileSearchInput = document.getElementById('mobile-search-input');
-
-            let searchTimeout;
-            const handleSearch = (value) => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    filterActivities(value);
-                }, 300);
-            };
-
-            searchInput?.addEventListener('input', (e) => handleSearch(e.target.value));
-            mobileSearchInput?.addEventListener('input', (e) => handleSearch(e.target.value));
-
-            // Sort select
-            document.getElementById('sort-select')?.addEventListener('change', (e) => {
-                sortActivities(e.target.value);
-            });
-
-            // Location button
-            document.getElementById('location-btn')?.addEventListener('click', requestLocation);
-
-            // FAB create
-            document.getElementById('fab-create')?.addEventListener('click', () => {
-                if (isLoggedIn) {
-                    window.location.href = '/create-activity';
-                } else {
-                    window.location.href = '/login';
-                }
-            });
-        }
-
-        async function logout() {
-            try {
-                await fetch('/api/users/web-logout', { method: 'POST' });
-            } catch (e) {
-                // Ignore errors, redirect anyway
-            }
-            isLoggedIn = false;
+        if (!getCookie('userId') && !getCookie('authToken')) {
             window.location.href = '/login';
-        }
-
-        // Location
-        function checkSavedLocation() {
-            const saved = localStorage.getItem('userLocation');
-            if (saved) {
-                userLocation = JSON.parse(saved);
-                updateLocationUI();
-                loadNearbyActivities();
-            }
-        }
-
-        function requestLocation() {
-            if (!navigator.geolocation) {
-                alert('Geolocation is not supported by your browser');
-                return;
-            }
-
-            const locationBtn = document.getElementById('location-btn');
-            const locationText = document.getElementById('location-text');
-            locationText.textContent = 'Getting location...';
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    userLocation = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    localStorage.setItem('userLocation', JSON.stringify(userLocation));
-                    updateLocationUI();
-                    loadNearbyActivities();
-                    loadAllActivities(); // Reload with distances
-                },
-                (error) => {
-                    console.error('Location error:', error);
-                    locationText.textContent = 'Location denied';
-                    setTimeout(() => {
-                        locationText.textContent = 'Enable location';
-                    }, 2000);
-                }
-            );
-        }
-
-        function updateLocationUI() {
-            const locationBtn = document.getElementById('location-btn');
-            const locationText = document.getElementById('location-text');
-            const locationPrompt = document.getElementById('location-prompt');
-
-            if (userLocation) {
-                locationText.textContent = 'Location enabled';
-                locationBtn.classList.add('text-success', 'border-success/30');
-                locationPrompt?.classList.add('hidden');
-            }
-        }
-
-        // Load Categories
-        async function loadCategories() {
-            try {
-                const response = await fetch('/api/categories');
-                const categories = await response.json();
-
-                const container = document.getElementById('categories-container');
-
-                if (categories.length === 0) {
-                    container.innerHTML = '<p class="text-slate-500">No categories available</p>';
-                    return;
-                }
-
-                container.innerHTML = `
-                    <button onclick="selectCategory(null)" class="category-btn shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${!selectedCategory ? 'bg-primary text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
-                        <div class="w-12 h-12 rounded-xl ${!selectedCategory ? 'bg-white/20' : 'bg-white/10'} flex items-center justify-center">
-                            <span class="material-symbols-outlined text-2xl">apps</span>
-                        </div>
-                        <span class="text-xs font-medium">All</span>
-                    </button>
-                    ${categories.map(cat => `
-                        <button onclick="selectCategory('${cat.name}')" class="category-btn shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${selectedCategory === cat.name ? 'bg-primary text-white' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
-                            <div class="w-12 h-12 rounded-xl ${selectedCategory === cat.name ? 'bg-white/20' : 'bg-white/10'} flex items-center justify-center">
-                                <span class="material-symbols-outlined text-2xl">${escapeHtml(cat.icon || 'category')}</span>
-                            </div>
-                            <span class="text-xs font-medium">${escapeHtml(cat.name)}</span>
-                        </button>
-                    `).join('')}
-                `;
-            } catch (error) {
-                console.error('Failed to load categories:', error);
-            }
-        }
-
-        function selectCategory(category) {
-            selectedCategory = category;
-            loadCategories(); // Refresh to update selected state
-            loadAllActivities();
-        }
-
-        // Load Trending Activities
-        async function loadTrendingActivities() {
-            try {
-                const response = await fetch('/api/activities/trending');
-                const trending = await response.json();
-
-                const container = document.getElementById('trending-container');
-
-                if (trending.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full text-center py-8">
-                            <p class="text-slate-500">No trending activities right now</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = trending.slice(0, 6).map(activity => renderActivityCard(activity, true)).join('');
-            } catch (error) {
-                console.error('Failed to load trending:', error);
-                document.getElementById('trending-container').innerHTML = `
-                    <div class="col-span-full text-center py-8">
-                        <p class="text-slate-500">Failed to load trending activities</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Load Nearby Activities
-        async function loadNearbyActivities() {
-            if (!userLocation) return;
-
-            try {
-                const response = await fetch(`/api/activities/nearby?latitude=${userLocation.latitude}&longitude=${userLocation.longitude}&radiusKm=50`);
-                const nearby = await response.json();
-
-                const container = document.getElementById('nearby-container');
-                const radiusSpan = document.getElementById('nearby-radius');
-                radiusSpan.textContent = '(within 50km)';
-                radiusSpan.classList.remove('hidden');
-
-                if (nearby.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full text-center py-8">
-                            <p class="text-slate-500">No activities nearby. Try expanding your search radius.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = nearby.slice(0, 6).map(activity => renderActivityCard(activity)).join('');
-            } catch (error) {
-                console.error('Failed to load nearby:', error);
-            }
-        }
-
-        // Load All Activities
-        async function loadAllActivities() {
-            try {
-                let url = '/api/activities';
-                const params = [];
-
-                if (userLocation) {
-                    params.push(`userLatitude=${userLocation.latitude}`);
-                    params.push(`userLongitude=${userLocation.longitude}`);
-                }
-
-                if (params.length > 0) {
-                    url += '?' + params.join('&');
-                }
-
-                const response = await fetch(url);
-                activities = await response.json();
-
-                // Filter by category if selected
-                if (selectedCategory) {
-                    activities = activities.filter(a => a.category === selectedCategory);
-                }
-
-                renderActivities();
-            } catch (error) {
-                console.error('Failed to load activities:', error);
-                document.getElementById('activities-container').innerHTML = `
-                    <div class="col-span-full text-center py-8">
-                        <p class="text-slate-500">Failed to load activities</p>
-                    </div>
-                `;
-            }
-        }
-
-        function renderActivities() {
-            const container = document.getElementById('activities-container');
-            const noActivities = document.getElementById('no-activities');
-
-            if (activities.length === 0) {
-                container.innerHTML = '';
-                noActivities.classList.remove('hidden');
-                return;
-            }
-
-            noActivities.classList.add('hidden');
-            container.innerHTML = activities.map(activity => renderActivityCard(activity)).join('');
-        }
-
-        function filterActivities(query) {
-            if (!query) {
-                loadAllActivities();
-                return;
-            }
-
-            const filtered = activities.filter(a =>
-                a.title?.toLowerCase().includes(query.toLowerCase()) ||
-                a.description?.toLowerCase().includes(query.toLowerCase()) ||
-                a.location?.toLowerCase().includes(query.toLowerCase()) ||
-                a.category?.toLowerCase().includes(query.toLowerCase())
-            );
-
-            const container = document.getElementById('activities-container');
-            const noActivities = document.getElementById('no-activities');
-
-            if (filtered.length === 0) {
-                container.innerHTML = '';
-                noActivities.classList.remove('hidden');
-            } else {
-                noActivities.classList.add('hidden');
-                container.innerHTML = filtered.map(activity => renderActivityCard(activity)).join('');
-            }
-        }
-
-        function sortActivities(sortBy) {
-            switch (sortBy) {
-                case 'date':
-                    activities.sort((a, b) => new Date(a.activityDate) - new Date(b.activityDate));
-                    break;
-                case 'distance':
-                    if (userLocation) {
-                        activities.sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
-                    }
-                    break;
-                case 'popular':
-                    activities.sort((a, b) => (b.participantsCount || 0) - (a.participantsCount || 0));
-                    break;
-            }
-            renderActivities();
-        }
-
-        // Render Activity Card
-        function renderActivityCard(activity, showTrending = false) {
-            const date = new Date(activity.activityDate);
-            const formattedDate = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            const formattedTime = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-            const spotsLeft = activity.availableSpots || 0;
-            const spotsClass = spotsLeft <= 3 ? 'text-danger' : spotsLeft <= 5 ? 'text-warning' : 'text-success';
-
-            const coverImage = activity.coverImageUrl || 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop';
-
-            return `
-                <a href="/activity/${activity.id}" class="group block glass-card rounded-2xl overflow-hidden hover:border-primary/30 transition-all">
-                    <div class="relative h-36 sm:h-40 overflow-hidden">
-                        <img src="${coverImage}" alt="${escapeHtml(activity.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop'">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        ${showTrending || activity.trending ? `
-                            <div class="absolute top-3 left-3 px-2 py-1 bg-warning/90 text-black text-xs font-bold rounded-lg flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">local_fire_department</span>
-                                Trending
-                            </div>
-                        ` : ''}
-                        <div class="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur text-white text-xs font-medium rounded-lg">
-                            ${escapeHtml(activity.category || 'Activity')}
-                        </div>
-                        ${activity.distance ? `
-                            <div class="absolute bottom-3 right-3 px-2 py-1 bg-black/50 backdrop-blur text-white text-xs font-medium rounded-lg flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">near_me</span>
-                                ${activity.distance.toFixed(1)} km
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="p-4">
-                        <h3 class="font-bold text-white mb-1 line-clamp-1 group-hover:text-primary transition-colors">${escapeHtml(activity.title)}</h3>
-                        <p class="text-slate-400 text-sm mb-3 line-clamp-2">${escapeHtml(activity.description || '')}</p>
-                        <div class="flex items-center gap-4 text-xs text-slate-500 mb-3">
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">calendar_today</span>
-                                ${formattedDate}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">schedule</span>
-                                ${formattedTime}
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="w-6 h-6 rounded-full bg-slate-700 overflow-hidden">
-                                    ${activity.creator?.profileImageUrl
-                                        ? `<img src="${activity.creator.profileImageUrl}" class="w-full h-full object-cover">`
-                                        : `<div class="w-full h-full flex items-center justify-center bg-primary/20"><span class="material-symbols-outlined text-primary text-sm">person</span></div>`
-                                    }
-                                </div>
-                                <span class="text-slate-400 text-sm">${escapeHtml(activity.creator?.fullName || 'Unknown')}</span>
-                            </div>
-                            <span class="text-sm ${spotsClass} font-medium">
-                                ${spotsLeft > 0 ? `${spotsLeft} spots left` : 'Full'}
-                            </span>
-                        </div>
-                    </div>
-                </a>
-            `;
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        } else {
+            loadActivities();
         }
     </script>
 </body>
