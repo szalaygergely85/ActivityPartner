@@ -1,6 +1,8 @@
 package com.gege.activitypartner.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
@@ -9,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 @Controller
 public class PageController {
+
+  @Value("${google.api.key:}")
+  private String googleApiKey;
 
   @GetMapping("/")
   public String home() {
@@ -51,7 +56,23 @@ public class PageController {
   }
 
   @GetMapping("/create-activity")
-  public String createActivity() {
+  public String createActivity(Model model) {
+    model.addAttribute("googleMapsApiKey", googleApiKey);
     return "create-activity";
+  }
+
+  @GetMapping("/activity/{id}")
+  public String activityDetail() {
+    return "activity-detail";
+  }
+
+  @GetMapping("/my-activities")
+  public String myActivities() {
+    return "my-activities";
+  }
+
+  @GetMapping("/profile")
+  public String profile() {
+    return "profile";
   }
 }

@@ -105,7 +105,7 @@
                         type="date"
                         required
                     />
-                    <label for="birthDate" class="absolute left-12 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none transition-all" id="birthDate-label">
+                    <label for="birthDate" class="absolute left-12 -top-2.5 text-xs text-slate-400 pointer-events-none bg-[#0a0f1a] px-1 rounded" id="birthDate-label">
                         Birth Date
                     </label>
                 </div>
@@ -195,20 +195,12 @@
                 <p class="text-slate-400 text-sm sm:text-base">Help the community get to know you better</p>
             </div>
 
-            <!-- Profile Picture -->
-            <div class="flex flex-col items-center mb-8">
-                <div class="relative group cursor-pointer" id="profile-picture-container">
-                    <div id="profile-preview" class="w-32 h-32 rounded-full bg-white/5 border-2 border-white/20 flex items-center justify-center overflow-hidden">
-                        <span class="material-symbols-outlined text-5xl text-slate-500">person</span>
-                    </div>
-                    <div class="absolute bottom-1 right-1 w-9 h-9 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                        <span class="material-symbols-outlined text-white text-lg">edit</span>
-                    </div>
-                    <input type="file" id="profile-picture-input" accept="image/*" class="hidden"/>
+            <!-- Profile Picture Preview -->
+            <div class="flex flex-col items-center mb-6">
+                <div id="profile-preview" class="w-28 h-28 rounded-full bg-white/5 border-2 border-primary/40 flex items-center justify-center overflow-hidden">
+                    <span class="material-symbols-outlined text-5xl text-slate-500">person</span>
                 </div>
-                <button type="button" id="change-photo-btn" class="mt-3 text-primary text-sm font-semibold hover:text-primary/80 transition-colors">
-                    Change Photo
-                </button>
+                <p id="profile-hint" class="mt-2 text-slate-500 text-xs">Tap a photo below to set as profile picture</p>
             </div>
 
             <!-- My Photos -->
@@ -304,18 +296,14 @@
     </div>
 
     <script>
-        // Available interests
-        const AVAILABLE_INTERESTS = [
-            'Sports', 'Music', 'Art', 'Technology', 'Gaming',
-            'Cooking', 'Travel', 'Reading', 'Photography', 'Fitness',
-            'Movies', 'Dancing', 'Hiking', 'Yoga', 'Food'
-        ];
+        // Categories loaded from API
+        let AVAILABLE_INTERESTS = [];
 
         // State
         let currentStep = 1;
         let registeredUserId = null;
-        let profilePictureFile = null;
         let galleryPhotos = [];
+        let profilePhotoIndex = -1;
         let selectedInterests = new Set();
 
         // DOM Elements
@@ -325,23 +313,8 @@
         const stepIndicator2 = document.getElementById('step-indicator-2');
         const downloadSection = document.getElementById('download-section');
 
-        // Hide birth date label when value is set
-        const birthDateInput = document.getElementById('birthDate');
-        const birthDateLabel = document.getElementById('birthDate-label');
-
-        function updateBirthDateLabel() {
-            if (birthDateInput.value) {
-                birthDateLabel.classList.add('hidden');
-            } else {
-                birthDateLabel.classList.remove('hidden');
-            }
-        }
-
-        birthDateInput.addEventListener('change', updateBirthDateLabel);
-        birthDateInput.addEventListener('focus', () => birthDateLabel.classList.add('hidden'));
-        birthDateInput.addEventListener('blur', updateBirthDateLabel);
-
         // Set max date to 13 years ago (minimum age)
+        const birthDateInput = document.getElementById('birthDate');
         const today = new Date();
         const minAge = 13;
         const maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
@@ -463,6 +436,7 @@
             errorDiv.classList.add('hidden');
 
             try {
+                /*
                 const response = await fetch('/api/users/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -477,9 +451,14 @@
                     // Go to step 2
                     goToStep(2);
                 } else {
-                    errorDiv.textContent = data.message || data.error || 'Registration failed. Please try again.';
+                   extContent = errorDiv.t data.message || data.error || 'Registration failed. Please try again.';
                     errorDiv.classList.remove('hidden');
                 }
+
+                 */
+
+                errorDiv.textContent = "Coming Soon!";
+                errorDiv.classList.remove('hidden');
             } catch (error) {
                 errorDiv.textContent = 'Connection error. Please try again.';
                 errorDiv.classList.remove('hidden');
@@ -494,47 +473,53 @@
 
         // Initialize Step 2
 
-        // Profile picture
-        const profilePictureContainer = document.getElementById('profile-picture-container');
-        const profilePictureInput = document.getElementById('profile-picture-input');
         const profilePreview = document.getElementById('profile-preview');
-        const changePhotoBtn = document.getElementById('change-photo-btn');
-
-        profilePictureContainer.addEventListener('click', () => profilePictureInput.click());
-        changePhotoBtn.addEventListener('click', () => profilePictureInput.click());
-
-        profilePictureInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                profilePictureFile = file;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    profilePreview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover"/>`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Gallery photos
+        const profileHint = document.getElementById('profile-hint');
         const photosGrid = document.getElementById('photos-grid');
         const galleryPhotoInput = document.getElementById('gallery-photo-input');
         const photoCount = document.getElementById('photo-count');
+
+        function updateProfilePreview() {
+            if (profilePhotoIndex >= 0 && profilePhotoIndex < galleryPhotos.length) {
+                profilePreview.innerHTML = `<img src="${galleryPhotos[profilePhotoIndex].preview}" class="w-full h-full object-cover"/>`;
+                profileHint.classList.add('hidden');
+            } else {
+                profilePreview.innerHTML = '<span class="material-symbols-outlined text-5xl text-slate-500">person</span>';
+                profileHint.classList.remove('hidden');
+            }
+        }
 
         function renderPhotosGrid() {
             photosGrid.innerHTML = '';
 
             // Render existing photos
             galleryPhotos.forEach((photo, index) => {
+                const isProfile = index === profilePhotoIndex;
                 const slot = document.createElement('div');
-                slot.className = 'aspect-square rounded-xl overflow-hidden relative group';
+                slot.className = 'aspect-square rounded-xl overflow-hidden relative group cursor-pointer' + (isProfile ? ' ring-2 ring-primary' : '');
                 slot.innerHTML = `
                     <img src="${photo.preview}" class="w-full h-full object-cover"/>
+                    ${isProfile ? '<div class="absolute top-1 left-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-white text-sm">person</span></div>' : ''}
                     <button type="button" class="absolute top-1 right-1 w-6 h-6 bg-danger/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-index="${index}">
                         <span class="material-symbols-outlined text-white text-sm">close</span>
                     </button>
                 `;
+                // Tap photo to set as profile
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('button[data-index]')) return;
+                    profilePhotoIndex = index;
+                    updateProfilePreview();
+                    renderPhotosGrid();
+                });
                 slot.querySelector('button').addEventListener('click', () => {
                     galleryPhotos.splice(index, 1);
+                    // Adjust profile index
+                    if (profilePhotoIndex === index) {
+                        profilePhotoIndex = galleryPhotos.length > 0 ? 0 : -1;
+                    } else if (profilePhotoIndex > index) {
+                        profilePhotoIndex--;
+                    }
+                    updateProfilePreview();
                     renderPhotosGrid();
                 });
                 photosGrid.appendChild(slot);
@@ -563,6 +548,11 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     galleryPhotos.push({ file, preview: e.target.result });
+                    // Auto-select first photo as profile
+                    if (profilePhotoIndex < 0) {
+                        profilePhotoIndex = 0;
+                        updateProfilePreview();
+                    }
                     renderPhotosGrid();
                 };
                 reader.readAsDataURL(file);
@@ -581,27 +571,40 @@
             bioCounter.textContent = `${bioInput.value.length}/150`;
         });
 
-        // Interests
+        // Interests (loaded from API)
         const interestsContainer = document.getElementById('interests-container');
 
-        AVAILABLE_INTERESTS.forEach(interest => {
-            const chip = document.createElement('button');
-            chip.type = 'button';
-            chip.className = 'px-4 py-2 rounded-full border border-white/20 text-sm font-medium text-slate-300 hover:border-primary/50 transition-all';
-            chip.textContent = interest;
-            chip.addEventListener('click', () => {
-                if (selectedInterests.has(interest)) {
-                    selectedInterests.delete(interest);
-                    chip.classList.remove('bg-primary', 'border-primary', 'text-white');
-                    chip.classList.add('border-white/20', 'text-slate-300');
-                } else {
-                    selectedInterests.add(interest);
-                    chip.classList.add('bg-primary', 'border-primary', 'text-white');
-                    chip.classList.remove('border-white/20', 'text-slate-300');
+        async function loadInterests() {
+            try {
+                const res = await fetch('/api/categories');
+                if (res.ok) {
+                    const categories = await res.json();
+                    AVAILABLE_INTERESTS = categories.map(c => c.name);
                 }
+            } catch (e) { /* use empty fallback */ }
+
+            interestsContainer.innerHTML = '';
+            AVAILABLE_INTERESTS.forEach(interest => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'px-4 py-2 rounded-full border border-white/20 text-sm font-medium text-slate-300 hover:border-primary/50 transition-all';
+                chip.textContent = interest;
+                chip.addEventListener('click', () => {
+                    if (selectedInterests.has(interest)) {
+                        selectedInterests.delete(interest);
+                        chip.classList.remove('bg-primary', 'border-primary', 'text-white');
+                        chip.classList.add('border-white/20', 'text-slate-300');
+                    } else {
+                        selectedInterests.add(interest);
+                        chip.classList.add('bg-primary', 'border-primary', 'text-white');
+                        chip.classList.remove('border-white/20', 'text-slate-300');
+                    }
+                });
+                interestsContainer.appendChild(chip);
             });
-            interestsContainer.appendChild(chip);
-        });
+        }
+
+        loadInterests();
 
         // Finish profile
         const finishBtn = document.getElementById('finish-btn');
@@ -622,33 +625,23 @@
                     const bio = bioInput.value.trim();
                     const interests = Array.from(selectedInterests);
 
-                    // Upload profile picture if selected
+                    // Upload all gallery photos
                     let profilePictureUrl = null;
-                    if (profilePictureFile) {
-                        const formData = new FormData();
-                        formData.append('file', profilePictureFile);
-                        const uploadRes = await fetch('/api/users/upload-image', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        if (uploadRes.ok) {
-                            const uploadData = await uploadRes.json();
-                            profilePictureUrl = uploadData.url || uploadData.imageUrl;
-                        }
-                    }
-
-                    // Upload gallery photos
                     const photoUrls = [];
-                    for (const photo of galleryPhotos) {
+                    for (let i = 0; i < galleryPhotos.length; i++) {
                         const formData = new FormData();
-                        formData.append('file', photo.file);
+                        formData.append('file', galleryPhotos[i].file);
                         const uploadRes = await fetch('/api/users/upload-image', {
                             method: 'POST',
                             body: formData
                         });
                         if (uploadRes.ok) {
                             const uploadData = await uploadRes.json();
-                            photoUrls.push(uploadData.url || uploadData.imageUrl);
+                            const url = uploadData.url || uploadData.imageUrl;
+                            photoUrls.push(url);
+                            if (i === profilePhotoIndex) {
+                                profilePictureUrl = url;
+                            }
                         }
                     }
 

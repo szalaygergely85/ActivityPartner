@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>Vivento - Profile</title>
+    <link rel="icon" type="image/svg+xml" href="/images/vivento.svg"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="/css/app.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7ff2",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#22c55e",
+                        "emerald": "#10b981",
+                        "background-dark": "#0a0f14",
+                        "surface-dark": "#131b24",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .pb-safe {
+            padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
+        }
+        @media (min-width: 640px) {
+            .pb-safe { padding-bottom: 24px; }
+        }
+        .bottom-nav {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item { color: #64748b; }
+        .nav-item.active { color: #0d7ff2; }
+        .nav-item .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
+        .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+        @media (min-width: 640px) {
+            body { padding-left: 80px; }
+        }
+        .photo-grid-item {
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .photo-grid-item:hover {
+            transform: scale(1.03);
+        }
+        .photo-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .interest-chip {
+            background: rgba(13, 127, 242, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(13, 127, 242, 0.3);
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Photo viewer overlay */
+        .photo-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-overlay img {
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        /* Edit modal */
+        .edit-field label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+        .edit-field input,
+        .edit-field textarea {
+            width: 100%;
+            background: #131b24;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .edit-field input:focus,
+        .edit-field textarea:focus {
+            border-color: #0d7ff2;
+        }
+        .edit-photo-slot {
+            aspect-ratio: 1;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+        .edit-photo-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .edit-photo-slot .delete-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .edit-photo-slot:hover .delete-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-custom text-white">
+    <!-- Desktop Sidebar Navigation -->
+    <nav class="hidden sm:flex fixed left-0 top-0 h-full w-20 bg-surface-dark border-r border-white/10 flex-col items-center py-6 z-50">
+        <a href="/" class="mb-8">
+            <img src="/images/vivento.svg" alt="Vivento" class="w-10 h-10"/>
+        </a>
+        <div class="flex-1 flex flex-col items-center gap-2">
+            <a href="/" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Explore">
+                <span class="material-symbols-outlined text-2xl">explore</span>
+            </a>
+            <a href="/my-activities" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="My Activities">
+                <span class="material-symbols-outlined text-2xl">list_alt</span>
+            </a>
+            <a href="/joined" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Joined">
+                <span class="material-symbols-outlined text-2xl">check_circle</span>
+            </a>
+            <a href="/notifications" class="nav-item relative w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Notifications">
+                <span class="material-symbols-outlined text-2xl">notifications</span>
+                <span id="notif-badge-desktop" class="hidden absolute top-2 right-2 w-2 h-2 bg-danger rounded-full"></span>
+            </a>
+        </div>
+        <a href="/profile" class="nav-item active w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Profile">
+            <span class="material-symbols-outlined text-2xl">person</span>
+        </a>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col max-w-2xl mx-auto">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-background-dark/95 backdrop-blur-lg border-b border-white/5">
+            <div class="flex items-center justify-between px-5 py-4">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">Profile</h1>
+                <div class="flex items-center gap-2">
+                    <button id="btn-settings" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-white/10 transition-colors" title="Settings">
+                        <span class="material-symbols-outlined text-xl text-white">settings</span>
+                    </button>
+                    <button id="btn-logout" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-danger/20 hover:border-danger/50 transition-colors" title="Sign out">
+                        <span class="material-symbols-outlined text-xl text-white">logout</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="flex-1 flex items-center justify-center py-20">
+            <div class="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+
+        <!-- Profile Content (hidden until loaded) -->
+        <main id="profile-content" class="hidden flex-1 px-5 pb-safe">
+
+            <!-- Profile Header Card -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-6 mt-4">
+                <div class="flex flex-col items-center">
+                    <!-- Avatar -->
+                    <div class="relative">
+                        <div id="profile-avatar" class="w-32 h-32 rounded-full border-4 border-primary overflow-hidden bg-slate-800 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-5xl text-slate-500">person</span>
+                        </div>
+                    </div>
+
+                    <!-- Name -->
+                    <h2 id="profile-name" class="text-2xl font-bold text-white mt-4"></h2>
+
+                    <!-- Email -->
+                    <p id="profile-email" class="text-slate-400 text-sm mt-1"></p>
+
+                    <!-- Badge -->
+                    <div id="profile-badge" class="hidden mt-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-warning/20 text-warning text-sm font-bold border border-warning/30"></span>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="flex gap-4 mt-6 w-full max-w-xs">
+                        <div class="stat-card flex-1 rounded-2xl p-4 text-center">
+                            <div class="flex items-center justify-center gap-1 mb-1">
+                                <span class="material-symbols-outlined text-warning text-lg filled">star</span>
+                            </div>
+                            <div id="stat-rating" class="text-2xl font-bold text-white">N/A</div>
+                            <div class="text-xs text-slate-400 mt-1">Rating</div>
+                        </div>
+                        <div class="stat-card flex-1 rounded-2xl p-4 text-center">
+                            <div class="flex items-center justify-center gap-1 mb-1">
+                                <span class="material-symbols-outlined text-primary text-lg">check_circle</span>
+                            </div>
+                            <div id="stat-activities" class="text-2xl font-bold text-white">0</div>
+                            <div class="text-xs text-slate-400 mt-1">Activities</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photos Card -->
+            <div id="card-photos" class="hidden bg-surface-dark rounded-3xl border border-slate-800 p-5 mt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-white">Photos</h3>
+                    <span id="photo-count" class="text-sm text-slate-400">0/6</span>
+                </div>
+                <div id="photos-grid" class="grid grid-cols-3 gap-2">
+                </div>
+                <!-- Empty photos state -->
+                <div id="photos-empty" class="hidden py-8 text-center">
+                    <span class="material-symbols-outlined text-4xl text-slate-600">photo_camera</span>
+                    <p class="text-slate-400 text-sm mt-2">No photos yet</p>
+                </div>
+            </div>
+
+            <!-- Bio Card -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-5 mt-4">
+                <h3 class="text-lg font-bold text-white mb-3">Bio</h3>
+                <p id="profile-bio" class="text-slate-300 text-sm leading-relaxed">No bio added yet</p>
+            </div>
+
+            <!-- Interests Card -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-5 mt-4">
+                <h3 class="text-lg font-bold text-white mb-3">Interests</h3>
+                <div id="interests-container" class="flex flex-wrap gap-2">
+                    <span class="interest-chip px-3 py-1.5 rounded-full text-sm font-medium">No interests added</span>
+                </div>
+            </div>
+
+            <!-- Edit Profile Button -->
+            <button id="btn-edit-profile" class="w-full mt-6 mb-4 bg-primary text-white font-bold py-4 rounded-2xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2 glow-button">
+                <span class="material-symbols-outlined text-xl">edit</span>
+                Edit Profile
+            </button>
+        </main>
+
+        <!-- Bottom Navigation (Mobile Only) -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-surface-dark border-t border-white/10 z-50 sm:hidden bottom-nav">
+            <div class="max-w-2xl mx-auto flex items-center justify-around py-2">
+                <a href="/" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">explore</span>
+                    <span class="text-[10px] mt-1 font-medium">Explore</span>
+                </a>
+                <a href="/my-activities" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">list_alt</span>
+                    <span class="text-[10px] mt-1 font-medium">Mine</span>
+                </a>
+                <a href="/joined" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">check_circle</span>
+                    <span class="text-[10px] mt-1 font-medium">Joined</span>
+                </a>
+                <a href="/notifications" class="nav-item relative flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">notifications</span>
+                    <span id="notif-badge" class="hidden absolute top-1 right-3 w-2 h-2 bg-danger rounded-full"></span>
+                    <span class="text-[10px] mt-1 font-medium">Alerts</span>
+                </a>
+                <a href="/profile" class="nav-item active flex flex-col items-center py-2 px-3 min-w-[56px]">
+                    <span class="material-symbols-outlined text-2xl">person</span>
+                    <span class="text-[10px] mt-1 font-medium">Profile</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Photo Viewer Overlay -->
+    <div id="photo-viewer" class="photo-overlay hidden" onclick="closePhotoViewer(event)">
+        <button class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center z-10" onclick="closePhotoViewer()">
+            <span class="material-symbols-outlined text-white">close</span>
+        </button>
+        <button id="photo-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" onclick="navigatePhoto(-1)">
+            <span class="material-symbols-outlined text-white">chevron_left</span>
+        </button>
+        <img id="photo-viewer-img" src="" alt="Photo" />
+        <button id="photo-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" onclick="navigatePhoto(1)">
+            <span class="material-symbols-outlined text-white">chevron_right</span>
+        </button>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-surface-dark rounded-t-3xl max-h-[90vh] overflow-y-auto sm:max-w-lg sm:mx-auto sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
+            <div class="p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">Edit Profile</h2>
+                    <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white">close</span>
+                    </button>
+                </div>
+
+                <!-- Profile Picture Preview -->
+                <div class="flex flex-col items-center mb-6">
+                    <div id="edit-profile-preview" class="w-28 h-28 rounded-full bg-white/5 border-2 border-primary/40 flex items-center justify-center overflow-hidden">
+                        <span class="material-symbols-outlined text-5xl text-slate-500">person</span>
+                    </div>
+                    <p class="mt-2 text-slate-500 text-xs">Tap a photo to set as profile picture</p>
+                </div>
+
+                <!-- Photo Album -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-bold text-white">My Photos</h3>
+                        <span id="edit-photo-count" class="text-xs text-slate-500 font-bold">(0/6)</span>
+                    </div>
+                    <div id="edit-photos-grid" class="grid grid-cols-3 gap-3"></div>
+                    <input type="file" id="edit-photo-input" accept="image/*" multiple class="hidden"/>
+                </div>
+
+                <!-- Full Name -->
+                <div class="edit-field mb-5">
+                    <label>Full Name</label>
+                    <input id="edit-fullname" type="text" placeholder="e.g. Sarah Connor" maxlength="100" />
+                </div>
+
+                <!-- Bio -->
+                <div class="edit-field mb-5">
+                    <label>Bio</label>
+                    <textarea id="edit-bio" placeholder="Share a little bit about your hobbies..." rows="4" maxlength="500"></textarea>
+                    <div class="text-right mt-1">
+                        <span id="bio-char-count" class="text-xs text-slate-500">0/500</span>
+                    </div>
+                </div>
+
+                <!-- Interests -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-white mb-3">Interests</h3>
+                    <div id="edit-interests" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Save Button -->
+                <button id="btn-save-profile" class="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2" onclick="saveProfile()">
+                    <span id="save-spinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span id="save-text">Save Changes</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentUser = null;
+        let currentPhotoIndex = 0;
+        let userPhotos = [];
+        let availableCategories = [];
+        let selectedInterests = [];
+        let editPhotos = [];
+        let editUploading = false;
+
+        // Auth
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        const userId = getCookie('userId');
+        if (!userId) {
+            window.location.href = '/login';
+        }
+
+        // Sign out
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            try {
+                await fetch('/api/users/web-logout', { method: 'POST' });
+            } catch (e) {}
+            document.cookie = 'userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/login';
+        });
+
+        // Settings
+        document.getElementById('btn-settings').addEventListener('click', () => {
+            // For now, could link to a settings page or show a settings modal
+        });
+
+        // Edit profile
+        document.getElementById('btn-edit-profile').addEventListener('click', () => openEditModal());
+
+        // Load profile
+        async function loadProfile() {
+            try {
+                const response = await fetch(`/api/users/${userId}`);
+                if (!response.ok) throw new Error('Failed to load profile');
+
+                currentUser = await response.json();
+                displayProfile(currentUser);
+
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('profile-content').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('loading-state').innerHTML = `
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-5xl text-slate-600 mb-4">error</span>
+                        <p class="text-slate-400">Failed to load profile</p>
+                        <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-primary rounded-xl text-white font-medium hover:bg-primary/90">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayProfile(user) {
+            // Name & email
+            document.getElementById('profile-name').textContent = user.fullName || 'Unknown';
+            document.getElementById('profile-email').textContent = user.email || '';
+
+            // Avatar
+            const avatarContainer = document.getElementById('profile-avatar');
+            if (user.profileImageUrl) {
+                avatarContainer.innerHTML = `<img src="${user.profileImageUrl}" alt="${user.fullName}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<span class=\\'material-symbols-outlined text-5xl text-slate-500\\'>person</span>'"/>`;
+            }
+
+            // Badge
+            const badgeEl = document.getElementById('profile-badge');
+            if (user.badge) {
+                badgeEl.classList.remove('hidden');
+                badgeEl.querySelector('span').textContent = user.badge;
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+
+            // Stats
+            document.getElementById('stat-rating').textContent = user.rating != null ? user.rating.toFixed(1) : 'N/A';
+            document.getElementById('stat-activities').textContent = user.completedActivities || 0;
+
+            // Bio
+            const bioEl = document.getElementById('profile-bio');
+            if (user.bio) {
+                bioEl.textContent = user.bio;
+                bioEl.classList.remove('text-slate-500');
+                bioEl.classList.add('text-slate-300');
+            } else {
+                bioEl.textContent = 'No bio added yet';
+                bioEl.classList.remove('text-slate-300');
+                bioEl.classList.add('text-slate-500');
+            }
+
+            // Interests
+            const interestsContainer = document.getElementById('interests-container');
+            interestsContainer.innerHTML = '';
+            if (user.interests && user.interests.length > 0) {
+                user.interests.forEach(interest => {
+                    const chip = document.createElement('span');
+                    chip.className = 'interest-chip px-3 py-1.5 rounded-full text-sm font-medium';
+                    chip.textContent = interest;
+                    interestsContainer.appendChild(chip);
+                });
+            } else {
+                interestsContainer.innerHTML = '<span class="text-slate-500 text-sm">No interests added</span>';
+            }
+
+            // Photos
+            displayPhotos(user.photos);
+        }
+
+        function displayPhotos(photos) {
+            const cardPhotos = document.getElementById('card-photos');
+            const photosGrid = document.getElementById('photos-grid');
+            const photosEmpty = document.getElementById('photos-empty');
+            const photoCount = document.getElementById('photo-count');
+
+            cardPhotos.classList.remove('hidden');
+
+            if (photos && photos.length > 0) {
+                userPhotos = photos;
+                photoCount.textContent = `${photos.length}/6`;
+                photosGrid.innerHTML = '';
+                photosEmpty.classList.add('hidden');
+
+                photos.forEach((photo, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'photo-grid-item relative bg-slate-800';
+                    item.innerHTML = `
+                        <img src="${photo.photoUrl}" alt="Photo ${index + 1}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22><rect fill=%22%23334155%22 width=%2280%22 height=%2280%22/></svg>'" />
+                        ${photo.isProfilePicture ? '<div class="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-white" style="font-size:14px">person</span></div>' : ''}
+                    `;
+                    item.addEventListener('click', () => openPhotoViewer(index));
+                    photosGrid.appendChild(item);
+                });
+            } else {
+                userPhotos = [];
+                photoCount.textContent = '0/6';
+                photosGrid.innerHTML = '';
+                photosEmpty.classList.remove('hidden');
+            }
+        }
+
+        // Photo viewer
+        function openPhotoViewer(index) {
+            currentPhotoIndex = index;
+            const viewer = document.getElementById('photo-viewer');
+            const img = document.getElementById('photo-viewer-img');
+            img.src = userPhotos[index].photoUrl;
+            viewer.classList.remove('hidden');
+            updatePhotoNavButtons();
+        }
+
+        function closePhotoViewer(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('photo-viewer').classList.add('hidden');
+        }
+
+        function navigatePhoto(direction) {
+            event.stopPropagation();
+            currentPhotoIndex += direction;
+            if (currentPhotoIndex < 0) currentPhotoIndex = userPhotos.length - 1;
+            if (currentPhotoIndex >= userPhotos.length) currentPhotoIndex = 0;
+            document.getElementById('photo-viewer-img').src = userPhotos[currentPhotoIndex].photoUrl;
+            updatePhotoNavButtons();
+        }
+
+        function updatePhotoNavButtons() {
+            document.getElementById('photo-prev').style.display = userPhotos.length > 1 ? 'flex' : 'none';
+            document.getElementById('photo-next').style.display = userPhotos.length > 1 ? 'flex' : 'none';
+        }
+
+        // Edit profile modal
+        async function openEditModal() {
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-fullname').value = currentUser.fullName || '';
+            document.getElementById('edit-bio').value = currentUser.bio || '';
+            updateBioCharCount();
+
+            selectedInterests = currentUser.interests ? [...currentUser.interests] : [];
+
+            // Load photos into edit state
+            editPhotos = currentUser.photos ? currentUser.photos.map(p => ({...p})) : [];
+            updateEditProfilePreview();
+            renderEditPhotosGrid();
+
+            // Load categories for interests
+            await loadCategories();
+        }
+
+        async function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            // Refresh profile to reflect any photo changes
+            try {
+                const response = await fetch(`/api/users/${userId}`);
+                if (response.ok) {
+                    currentUser = await response.json();
+                    displayProfile(currentUser);
+                }
+            } catch (err) {}
+        }
+
+        // --- Photo album management ---
+
+        function updateEditProfilePreview() {
+            const preview = document.getElementById('edit-profile-preview');
+            const profilePhoto = editPhotos.find(p => p.isProfilePicture);
+            if (profilePhoto) {
+                preview.innerHTML = `<img src="${profilePhoto.photoUrl}" class="w-full h-full object-cover"/>`;
+            } else if (editPhotos.length > 0) {
+                preview.innerHTML = `<img src="${editPhotos[0].photoUrl}" class="w-full h-full object-cover"/>`;
+            } else {
+                preview.innerHTML = '<span class="material-symbols-outlined text-5xl text-slate-500">person</span>';
+            }
+        }
+
+        function renderEditPhotosGrid() {
+            const grid = document.getElementById('edit-photos-grid');
+            const countEl = document.getElementById('edit-photo-count');
+            grid.innerHTML = '';
+
+            editPhotos.forEach((photo) => {
+                const isProfile = photo.isProfilePicture;
+                const slot = document.createElement('div');
+                slot.className = 'edit-photo-slot bg-slate-800' + (isProfile ? ' ring-2 ring-primary' : '');
+                slot.innerHTML = `
+                    <img src="${photo.photoUrl}" alt="Photo"/>
+                    ${isProfile ? '<div class="absolute top-1 left-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-white text-sm">person</span></div>' : ''}
+                    <button type="button" class="delete-btn absolute top-1 right-1 w-6 h-6 bg-danger/90 rounded-full flex items-center justify-center">
+                        <span class="material-symbols-outlined text-white text-sm">close</span>
+                    </button>
+                `;
+                slot.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-btn')) return;
+                    setEditProfilePhoto(photo.id);
+                });
+                slot.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteEditPhoto(photo.id);
+                });
+                grid.appendChild(slot);
+            });
+
+            // Add button if < 6
+            if (editPhotos.length < 6) {
+                const addSlot = document.createElement('div');
+                addSlot.className = 'aspect-square rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all';
+                addSlot.innerHTML = '<span class="material-symbols-outlined text-3xl text-slate-500">add_photo_alternate</span>';
+                addSlot.addEventListener('click', () => {
+                    if (!editUploading) document.getElementById('edit-photo-input').click();
+                });
+                grid.appendChild(addSlot);
+            }
+
+            countEl.textContent = `(${editPhotos.length}/6)`;
+        }
+
+        document.getElementById('edit-photo-input').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            const remaining = 6 - editPhotos.length;
+            const toUpload = files.slice(0, remaining);
+
+            editUploading = true;
+
+            for (const file of toUpload) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const response = await fetch('/api/users/photos/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    if (response.ok) {
+                        const photo = await response.json();
+                        editPhotos.push(photo);
+                        renderEditPhotosGrid();
+                        updateEditProfilePreview();
+                    }
+                } catch (err) {
+                    console.error('Upload failed:', err);
+                }
+            }
+
+            editUploading = false;
+            e.target.value = '';
+        });
+
+        async function deleteEditPhoto(photoId) {
+            try {
+                const response = await fetch(`/api/users/photos/${photoId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    editPhotos = editPhotos.filter(p => p.id !== photoId);
+                    renderEditPhotosGrid();
+                    updateEditProfilePreview();
+                }
+            } catch (err) {
+                console.error('Delete failed:', err);
+            }
+        }
+
+        async function setEditProfilePhoto(photoId) {
+            try {
+                const response = await fetch(`/api/users/photos/${photoId}/set-as-profile`, { method: 'PUT' });
+                if (response.ok) {
+                    editPhotos.forEach(p => p.isProfilePicture = (p.id === photoId));
+                    renderEditPhotosGrid();
+                    updateEditProfilePreview();
+                }
+            } catch (err) {
+                console.error('Set profile failed:', err);
+            }
+        }
+
+        // --- Interest chips (register-style) ---
+
+        async function loadCategories() {
+            const interestsContainer = document.getElementById('edit-interests');
+            try {
+                const response = await fetch('/api/categories');
+                if (response.ok) {
+                    availableCategories = await response.json();
+                    interestsContainer.innerHTML = '';
+                    availableCategories.forEach(category => {
+                        const name = category.name || category;
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        const isSelected = selectedInterests.includes(name);
+                        chip.className = 'px-4 py-2 rounded-full border text-sm font-medium transition-all ' +
+                            (isSelected ? 'bg-primary border-primary text-white' : 'border-white/20 text-slate-300 hover:border-primary/50');
+                        chip.textContent = name;
+                        chip.addEventListener('click', () => toggleInterest(name, chip));
+                        interestsContainer.appendChild(chip);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                interestsContainer.innerHTML = '<span class="text-slate-500 text-sm">Could not load interests</span>';
+            }
+        }
+
+        function toggleInterest(interest, chip) {
+            const index = selectedInterests.indexOf(interest);
+            if (index > -1) {
+                selectedInterests.splice(index, 1);
+                chip.classList.remove('bg-primary', 'border-primary', 'text-white');
+                chip.classList.add('border-white/20', 'text-slate-300');
+            } else {
+                selectedInterests.push(interest);
+                chip.classList.add('bg-primary', 'border-primary', 'text-white');
+                chip.classList.remove('border-white/20', 'text-slate-300');
+            }
+        }
+
+        // Bio character counter
+        document.getElementById('edit-bio').addEventListener('input', updateBioCharCount);
+        function updateBioCharCount() {
+            const bio = document.getElementById('edit-bio').value;
+            document.getElementById('bio-char-count').textContent = `${bio.length}/500`;
+        }
+
+        // Save profile (text fields only — photos are saved immediately)
+        async function saveProfile() {
+            const fullName = document.getElementById('edit-fullname').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+
+            if (!fullName) {
+                document.getElementById('edit-fullname').style.borderColor = '#ef4444';
+                return;
+            }
+
+            const saveBtn = document.getElementById('btn-save-profile');
+            const spinner = document.getElementById('save-spinner');
+            const saveText = document.getElementById('save-text');
+
+            saveBtn.disabled = true;
+            spinner.classList.remove('hidden');
+            saveText.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        bio: bio || null,
+                        interests: selectedInterests.length > 0 ? selectedInterests : null,
+                    }),
+                });
+
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    currentUser = updatedUser;
+                    displayProfile(updatedUser);
+                    document.getElementById('edit-modal').classList.add('hidden');
+                } else {
+                    const error = await response.text();
+                    alert('Failed to save: ' + error);
+                }
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                alert('Failed to save profile. Please try again.');
+            } finally {
+                saveBtn.disabled = false;
+                spinner.classList.add('hidden');
+                saveText.textContent = 'Save Changes';
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('photo-viewer').classList.contains('hidden')) {
+                    closePhotoViewer();
+                } else if (!document.getElementById('edit-modal').classList.contains('hidden')) {
+                    closeEditModal();
+                }
+            }
+            // Arrow key navigation in photo viewer
+            if (!document.getElementById('photo-viewer').classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') navigatePhoto(-1);
+                if (e.key === 'ArrowRight') navigatePhoto(1);
+            }
+        });
+
+        // Init
+        if (userId) {
+            loadProfile();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>Activity Details - Vivento</title>
+    <link rel="icon" type="image/svg+xml" href="/images/vivento.svg"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="/css/app.css" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7ff2",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#22c55e",
+                        "emerald": "#10b981",
+                        "background-dark": "#0a0f14",
+                        "surface-dark": "#131b24",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .pb-safe { padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom))); }
+    </style>
+</head>
+<body class="bg-gradient-custom text-white min-h-screen">
+
+    <!-- Loading State -->
+    <div id="loading-state" class="min-h-screen flex items-center justify-center">
+        <div class="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="main-content" class="hidden">
+
+        <!-- Hero Image -->
+        <div class="relative h-72 sm:h-80 overflow-hidden">
+            <img id="hero-image" src="" alt="" class="w-full h-full object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-black/30 to-black/20"></div>
+            <!-- Back Button -->
+            <button onclick="history.back()" class="absolute top-4 left-4 w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/60 transition-colors z-10">
+                <span class="material-symbols-outlined text-white text-xl">arrow_back</span>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="max-w-2xl mx-auto px-5 -mt-8 relative z-10 pb-safe">
+
+            <!-- Activity Info Card -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-6 mb-4">
+                <!-- Badges Row -->
+                <div class="flex items-center gap-2 mb-3 flex-wrap">
+                    <span id="category-badge" class="px-3 py-1 rounded-lg text-xs font-bold uppercase bg-emerald/20 text-emerald"></span>
+                    <span id="status-badge" class="hidden px-3 py-1 rounded-lg text-xs font-bold"></span>
+                    <span id="expired-badge" class="hidden px-3 py-1 rounded-lg text-xs font-bold bg-danger/20 text-danger border border-danger/30">Expired</span>
+                </div>
+
+                <!-- Title -->
+                <h1 id="activity-title" class="text-2xl font-bold text-white mb-5"></h1>
+
+                <!-- Details Grid 2x2 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Date -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-primary text-xl">calendar_today</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs">Date</p>
+                            <p id="activity-date" class="text-white text-sm font-semibold"></p>
+                        </div>
+                    </div>
+                    <!-- Time -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-primary text-xl">schedule</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs">Time</p>
+                            <p id="activity-time" class="text-white text-sm font-semibold"></p>
+                        </div>
+                    </div>
+                    <!-- Location -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-emerald text-xl">location_on</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs">Location</p>
+                            <p id="activity-location" class="text-white text-sm font-semibold line-clamp-2"></p>
+                        </div>
+                    </div>
+                    <!-- Capacity -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-warning text-xl">group</span>
+                        </div>
+                        <div>
+                            <p class="text-slate-500 text-xs">Capacity</p>
+                            <p id="activity-capacity" class="text-white text-sm font-semibold"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Host Card -->
+            <div id="host-card" class="bg-surface-dark rounded-3xl border border-slate-800 p-5 mb-4 flex items-center gap-4 cursor-pointer hover:border-slate-700 transition-colors">
+                <div class="w-14 h-14 rounded-full bg-slate-700 overflow-hidden flex-shrink-0">
+                    <img id="host-avatar" src="" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-xl font-bold text-white\'>' + (this.alt?.charAt(0) || '?') + '</div>'"/>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-slate-500 text-xs mb-0.5">Hosted by</p>
+                    <p id="host-name" class="text-white font-bold text-base truncate"></p>
+                    <div class="flex items-center gap-1 mt-0.5">
+                        <span class="material-symbols-outlined filled text-warning text-sm">star</span>
+                        <span id="host-rating" class="text-slate-400 text-sm"></span>
+                        <span id="host-badge" class="hidden ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary"></span>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-slate-500 text-xl">chevron_right</span>
+            </div>
+
+            <!-- About Section -->
+            <div id="about-section" class="bg-surface-dark rounded-3xl border border-slate-800 p-6 mb-4">
+                <h2 class="text-lg font-bold text-white mb-3">About</h2>
+                <p id="activity-description" class="text-slate-400 text-sm leading-relaxed whitespace-pre-line"></p>
+            </div>
+
+            <!-- Location Section -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-6 mb-4">
+                <h2 class="text-lg font-bold text-white mb-3">Location</h2>
+                <!-- Static Map Preview -->
+                <div id="map-container" class="hidden rounded-2xl overflow-hidden mb-3 h-44 bg-slate-800">
+                    <iframe id="map-iframe" class="w-full h-full border-0" loading="lazy" allowfullscreen></iframe>
+                </div>
+                <div class="flex items-center gap-2 text-slate-400 text-sm mb-3">
+                    <span class="material-symbols-outlined text-base">location_on</span>
+                    <span id="location-address" class="line-clamp-2"></span>
+                </div>
+                <a id="directions-btn" href="#" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-primary/30 text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
+                    <span class="material-symbols-outlined text-lg">directions</span>
+                    Get Directions
+                </a>
+            </div>
+
+            <!-- Participants Section -->
+            <div class="bg-surface-dark rounded-3xl border border-slate-800 p-6 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-white">Participants</h2>
+                    <span id="participant-count" class="text-slate-500 text-sm"></span>
+                </div>
+                <!-- Participant List (horizontal scroll) -->
+                <div id="participants-list" class="flex gap-3 overflow-x-auto hide-scrollbar pb-2">
+                    <!-- Populated by JS -->
+                </div>
+                <div id="no-participants" class="hidden text-center py-6">
+                    <span class="material-symbols-outlined text-4xl text-slate-700 mb-2">group_off</span>
+                    <p class="text-slate-500 text-sm">No participants yet</p>
+                </div>
+            </div>
+
+            <!-- Comments Section (visible only for joined participants) -->
+            <div id="comments-section" class="hidden bg-surface-dark rounded-3xl border border-slate-800 p-6 mb-4">
+                <h2 class="text-lg font-bold text-white mb-4">Chat</h2>
+                <!-- Comment Input -->
+                <div class="flex items-center gap-3 mb-4">
+                    <input id="comment-input" type="text" placeholder="Write a message..."
+                        class="flex-1 bg-background-dark border border-slate-700 rounded-xl py-3 px-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"/>
+                    <button id="send-comment" class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors flex-shrink-0">
+                        <span class="material-symbols-outlined text-white text-xl">send</span>
+                    </button>
+                </div>
+                <!-- Comments List -->
+                <div id="comments-list" class="space-y-4 max-h-96 overflow-y-auto">
+                    <!-- Populated by JS -->
+                </div>
+                <div id="no-comments" class="hidden text-center py-4">
+                    <p class="text-slate-500 text-sm">No messages yet. Start the conversation!</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div id="action-buttons" class="space-y-3 mb-6">
+                <!-- Express Interest (non-creator, not joined) -->
+                <button id="btn-express-interest" class="hidden glow-button w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">favorite</span>
+                    Express Interest
+                </button>
+                <!-- Cancel Request (pending/interested) -->
+                <button id="btn-cancel-request" class="hidden w-full bg-warning/20 border border-warning/30 hover:bg-warning/30 text-warning font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                    Cancel Request
+                </button>
+                <!-- Leave Activity (joined/accepted) -->
+                <button id="btn-leave" class="hidden w-full bg-danger/20 border border-danger/30 hover:bg-danger/30 text-danger font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    Leave Activity
+                </button>
+                <!-- Max Attempts Reached -->
+                <button id="btn-max-attempts" class="hidden w-full bg-slate-800 text-slate-500 font-bold py-4 rounded-xl text-base cursor-not-allowed flex items-center justify-center gap-2" disabled>
+                    <span class="material-symbols-outlined text-xl">block</span>
+                    Max Attempts Reached
+                </button>
+                <!-- Edit Activity (creator) -->
+                <button id="btn-edit" class="hidden glow-button w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">edit</span>
+                    Edit Activity
+                </button>
+                <!-- Delete Activity (creator) -->
+                <button id="btn-delete" class="hidden w-full bg-danger/20 border border-danger/30 hover:bg-danger/30 text-danger font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-xl">delete</span>
+                    Delete Activity
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-state" class="hidden min-h-screen flex flex-col items-center justify-center px-5">
+        <span class="material-symbols-outlined text-6xl text-slate-700 mb-4">error</span>
+        <h2 class="text-xl font-bold text-white mb-2">Activity not found</h2>
+        <p class="text-slate-500 text-sm mb-6">This activity may have been removed or doesn't exist.</p>
+        <a href="/" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors">Back to Home</a>
+    </div>
+
+    <script>
+        // Auth & Helpers
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        if (!getCookie('userId') && !getCookie('authToken')) {
+            window.location.href = '/login';
+        }
+
+        const currentUserId = parseInt(getCookie('userId'));
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function formatTimestamp(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMin = Math.floor(diffMs / 60000);
+            if (diffMin < 1) return 'Just now';
+            if (diffMin < 60) return `${diffMin}m ago`;
+            const diffHr = Math.floor(diffMin / 60);
+            if (diffHr < 24) return `${diffHr}h ago`;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function isExpired(dateStr) {
+            return new Date(dateStr) < new Date();
+        }
+
+        // Extract activity ID from URL
+        const pathParts = window.location.pathname.split('/');
+        const activityId = pathParts[pathParts.length - 1];
+
+        // State
+        let activity = null;
+        let participants = [];
+        let myParticipation = null;
+
+        // Load everything
+        async function loadActivity() {
+            try {
+                const res = await fetch(`/api/activities/${activityId}`);
+                if (!res.ok) throw new Error('Not found');
+                activity = await res.json();
+
+                renderActivity();
+                loadParticipants();
+            } catch (e) {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+            }
+        }
+
+        function renderActivity() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+
+            // Hero image
+            const heroImg = document.getElementById('hero-image');
+            heroImg.src = activity.coverImageUrl || '/images/activity-default.jpg';
+            heroImg.alt = activity.title;
+            heroImg.onerror = () => heroImg.src = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&h=400&fit=crop';
+
+            // Page title
+            document.title = `${activity.title} - Vivento`;
+
+            // Category badge
+            const catBadge = document.getElementById('category-badge');
+            catBadge.textContent = activity.category || 'Activity';
+
+            // Status badges
+            if (activity.status === 'CANCELLED') {
+                const badge = document.getElementById('status-badge');
+                badge.textContent = 'Cancelled';
+                badge.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-danger/20 text-danger border border-danger/30';
+                badge.classList.remove('hidden');
+            } else if (activity.status === 'FULL') {
+                const badge = document.getElementById('status-badge');
+                badge.textContent = 'Full';
+                badge.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-warning/20 text-warning border border-warning/30';
+                badge.classList.remove('hidden');
+            } else if (activity.status === 'COMPLETED') {
+                const badge = document.getElementById('status-badge');
+                badge.textContent = 'Completed';
+                badge.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-slate-700/50 text-slate-400 border border-slate-600';
+                badge.classList.remove('hidden');
+            }
+
+            // Expired badge
+            if (isExpired(activity.activityDate)) {
+                document.getElementById('expired-badge').classList.remove('hidden');
+            }
+
+            // Title
+            document.getElementById('activity-title').textContent = activity.title;
+
+            // Details grid
+            document.getElementById('activity-date').textContent = formatDate(activity.activityDate);
+            document.getElementById('activity-time').textContent = formatTime(activity.activityDate);
+            document.getElementById('activity-location').textContent = activity.location || 'Location TBD';
+            document.getElementById('activity-capacity').textContent =
+                activity.totalSpots ? `${activity.availableSpots} / ${activity.totalSpots} spots` : 'Unlimited';
+
+            // Host card
+            const creator = activity.creator;
+            if (creator) {
+                const hostAvatar = document.getElementById('host-avatar');
+                hostAvatar.src = creator.profileImageUrl || '';
+                hostAvatar.alt = creator.fullName || '';
+                document.getElementById('host-name').textContent = creator.fullName || 'Unknown';
+                document.getElementById('host-rating').textContent = creator.rating ? creator.rating.toFixed(1) : 'New';
+
+                if (creator.badge) {
+                    const badgeEl = document.getElementById('host-badge');
+                    badgeEl.textContent = creator.badge;
+                    badgeEl.classList.remove('hidden');
+                }
+
+                document.getElementById('host-card').addEventListener('click', () => {
+                    window.location.href = `/profile/${creator.id}`;
+                });
+            }
+
+            // Description
+            const desc = activity.description;
+            if (desc && desc.trim()) {
+                document.getElementById('activity-description').textContent = desc;
+            } else {
+                document.getElementById('about-section').classList.add('hidden');
+            }
+
+            // Location section
+            document.getElementById('location-address').textContent = activity.location || 'Location TBD';
+
+            if (activity.latitude && activity.longitude) {
+                const lat = activity.latitude;
+                const lng = activity.longitude;
+                document.getElementById('map-container').classList.remove('hidden');
+                document.getElementById('map-iframe').src =
+                    `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                document.getElementById('directions-btn').href =
+                    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            } else {
+                document.getElementById('directions-btn').href =
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activity.location || '')}`;
+            }
+
+            // Action buttons — determine based on creator vs participant
+            updateActionButtons();
+        }
+
+        async function loadParticipants() {
+            try {
+                const res = await fetch(`/api/participants/activities/${activityId}`);
+                if (res.ok) {
+                    participants = await res.json();
+                    renderParticipants();
+                    checkMyParticipation();
+                }
+            } catch (e) {
+                console.error('Error loading participants:', e);
+            }
+        }
+
+        function renderParticipants() {
+            const list = document.getElementById('participants-list');
+            const noParticipants = document.getElementById('no-participants');
+            list.innerHTML = '';
+
+            // Filter to show accepted/joined participants
+            const visible = participants.filter(p =>
+                ['ACCEPTED', 'JOINED'].includes(p.status)
+            );
+
+            if (visible.length === 0) {
+                noParticipants.classList.remove('hidden');
+                document.getElementById('participant-count').textContent = '0 joined';
+                return;
+            }
+
+            noParticipants.classList.add('hidden');
+            document.getElementById('participant-count').textContent = `${visible.length} joined`;
+
+            visible.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'flex-shrink-0 flex flex-col items-center gap-2 p-3 bg-background-dark rounded-2xl border border-slate-800 w-24';
+
+                const name = p.user?.fullName || 'User';
+                const avatar = p.user?.profileImageUrl;
+                const rating = p.user?.rating;
+                const initial = name.charAt(0).toUpperCase();
+
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-slate-700 overflow-hidden flex items-center justify-center text-lg font-bold text-white">
+                        ${avatar ? `<img src="${avatar}" alt="${name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.textContent='${initial}'"/>` : initial}
+                    </div>
+                    <p class="text-white text-xs font-semibold text-center truncate w-full">${name.split(' ')[0]}</p>
+                    ${rating ? `<div class="flex items-center gap-0.5"><span class="material-symbols-outlined filled text-warning" style="font-size:12px">star</span><span class="text-slate-400 text-xs">${rating.toFixed(1)}</span></div>` : ''}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function checkMyParticipation() {
+            myParticipation = participants.find(p => p.user?.id === currentUserId);
+            updateActionButtons();
+
+            // Show comments section if user is joined/accepted
+            if (myParticipation && ['JOINED', 'ACCEPTED'].includes(myParticipation.status)) {
+                document.getElementById('comments-section').classList.remove('hidden');
+                loadComments();
+            }
+        }
+
+        function updateActionButtons() {
+            if (!activity) return;
+
+            const isCreator = activity.creator?.id === currentUserId;
+            const expired = isExpired(activity.activityDate);
+            const cancelled = activity.status === 'CANCELLED';
+
+            // Hide all buttons first
+            document.querySelectorAll('#action-buttons button').forEach(b => b.classList.add('hidden'));
+
+            if (cancelled || expired) return;
+
+            if (isCreator) {
+                document.getElementById('btn-edit').classList.remove('hidden');
+                document.getElementById('btn-delete').classList.remove('hidden');
+            } else {
+                if (!myParticipation) {
+                    document.getElementById('btn-express-interest').classList.remove('hidden');
+                } else if (['PENDING', 'INTERESTED'].includes(myParticipation.status)) {
+                    document.getElementById('btn-cancel-request').classList.remove('hidden');
+                } else if (['JOINED', 'ACCEPTED'].includes(myParticipation.status)) {
+                    document.getElementById('btn-leave').classList.remove('hidden');
+                } else if (myParticipation.status === 'WITHDRAWN' || myParticipation.status === 'DECLINED') {
+                    // Check application attempts
+                    if (myParticipation.applicationAttempts >= 3) {
+                        document.getElementById('btn-max-attempts').classList.remove('hidden');
+                    } else {
+                        document.getElementById('btn-express-interest').classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        // Comments
+        async function loadComments() {
+            try {
+                const res = await fetch(`/api/activities/${activityId}/messages`);
+                if (res.ok) {
+                    const messages = await res.json();
+                    renderComments(messages);
+                }
+            } catch (e) {
+                console.error('Error loading comments:', e);
+            }
+        }
+
+        function renderComments(messages) {
+            const list = document.getElementById('comments-list');
+            const noComments = document.getElementById('no-comments');
+            list.innerHTML = '';
+
+            if (!messages || messages.length === 0) {
+                noComments.classList.remove('hidden');
+                return;
+            }
+
+            noComments.classList.add('hidden');
+
+            messages.forEach(msg => {
+                const isOwn = msg.isOwnMessage || msg.userId === currentUserId;
+                const div = document.createElement('div');
+                div.className = `flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`;
+
+                const initial = (msg.userName || '?').charAt(0).toUpperCase();
+
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">
+                        ${msg.userProfilePicture ? `<img src="${msg.userProfilePicture}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'; this.parentElement.textContent='${initial}'"/>` : initial}
+                    </div>
+                    <div class="max-w-[75%]">
+                        <div class="flex items-center gap-2 mb-1 ${isOwn ? 'flex-row-reverse' : ''}">
+                            <span class="text-white text-xs font-semibold">${msg.userName || 'User'}</span>
+                            <span class="text-slate-600 text-xs">${formatTimestamp(msg.createdAt)}</span>
+                        </div>
+                        <div class="px-4 py-2.5 rounded-2xl text-sm ${isOwn ? 'bg-primary text-white rounded-tr-sm' : 'bg-slate-800 text-slate-300 rounded-tl-sm'}">
+                            ${msg.messageText}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // Send comment
+        document.getElementById('send-comment').addEventListener('click', sendComment);
+        document.getElementById('comment-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendComment(); }
+        });
+
+        async function sendComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            try {
+                const res = await fetch(`/api/activities/${activityId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messageText: text })
+                });
+                if (res.ok) {
+                    loadComments();
+                }
+            } catch (e) {
+                console.error('Error sending comment:', e);
+            }
+        }
+
+        // Action Button Handlers
+        document.getElementById('btn-express-interest').addEventListener('click', async () => {
+            try {
+                const res = await fetch(`/api/participants/activities/${activityId}/interest`, { method: 'POST' });
+                if (res.ok) {
+                    loadParticipants();
+                } else {
+                    const data = await res.json();
+                    alert(data.message || 'Failed to express interest');
+                }
+            } catch (e) { alert('Something went wrong'); }
+        });
+
+        document.getElementById('btn-cancel-request').addEventListener('click', async () => {
+            if (!confirm('Cancel your interest request?')) return;
+            try {
+                const res = await fetch(`/api/participants/activities/${activityId}/interest`, { method: 'DELETE' });
+                if (res.ok) {
+                    myParticipation = null;
+                    loadParticipants();
+                }
+            } catch (e) { alert('Something went wrong'); }
+        });
+
+        document.getElementById('btn-leave').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to leave this activity?')) return;
+            try {
+                const res = await fetch(`/api/participants/activities/${activityId}/leave`, { method: 'DELETE' });
+                if (res.ok) {
+                    myParticipation = null;
+                    document.getElementById('comments-section').classList.add('hidden');
+                    loadParticipants();
+                }
+            } catch (e) { alert('Something went wrong'); }
+        });
+
+        document.getElementById('btn-edit').addEventListener('click', () => {
+            window.location.href = `/create-activity?edit=${activityId}`;
+        });
+
+        document.getElementById('btn-delete').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete this activity? This cannot be undone.')) return;
+            try {
+                const res = await fetch(`/api/activities/${activityId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Failed to delete activity');
+                }
+            } catch (e) { alert('Something went wrong'); }
+        });
+
+        // Init
+        loadActivity();
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-    <title>Vivento - Discover Activities</title>
+    <title>Vivento - My Activities</title>
     <link rel="icon" type="image/svg+xml" href="/images/vivento.svg"/>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
@@ -34,7 +34,6 @@
         }
     </script>
     <style>
-        /* Bottom nav safe area */
         .pb-safe {
             padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom)));
         }
@@ -46,18 +45,38 @@
         .bottom-nav {
             padding-bottom: env(safe-area-inset-bottom);
         }
-        /* Filter button styles */
-        .filter-btn { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
-        .filter-btn:hover { background: rgba(255, 255, 255, 0.1); }
-        .filter-btn.active { background: #0d7ff2; color: white; }
-        /* Nav styles */
         .nav-item { color: #64748b; }
         .nav-item.active { color: #0d7ff2; }
         .nav-item .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
         .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
-        /* Desktop nav */
         @media (min-width: 640px) {
             body { padding-left: 80px; }
+        }
+        /* Toggle switch */
+        .toggle-track {
+            width: 44px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-track.active {
+            background: #0d7ff2;
+        }
+        .toggle-thumb {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        .toggle-track.active .toggle-thumb {
+            transform: translateX(20px);
         }
     </style>
 </head>
@@ -68,10 +87,10 @@
             <img src="/images/vivento.svg" alt="Vivento" class="w-10 h-10"/>
         </a>
         <div class="flex-1 flex flex-col items-center gap-2">
-            <a href="/" class="nav-item active w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Explore">
+            <a href="/" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Explore">
                 <span class="material-symbols-outlined text-2xl">explore</span>
             </a>
-            <a href="/my-activities" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="My Activities">
+            <a href="/my-activities" class="nav-item active w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="My Activities">
                 <span class="material-symbols-outlined text-2xl">list_alt</span>
             </a>
             <a href="/joined" class="nav-item w-12 h-12 rounded-xl flex items-center justify-center hover:bg-white/5 transition-colors" title="Joined">
@@ -91,43 +110,23 @@
     <div class="min-h-screen flex flex-col max-w-2xl mx-auto">
         <!-- Sticky Header -->
         <header class="sticky top-0 z-40 bg-background-dark/95 backdrop-blur-lg border-b border-white/5">
-            <!-- Top Row: Title + Buttons -->
             <div class="flex items-center justify-between px-5 py-4">
-                <h1 class="text-2xl sm:text-3xl font-bold text-white">Discover</h1>
-                <div class="flex items-center gap-2">
-                    <button id="btn-filter" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-white/10 transition-colors" title="Filter">
-                        <span class="material-symbols-outlined text-xl text-white">tune</span>
-                    </button>
-                    <button id="btn-search" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-white/10 transition-colors" title="Search">
-                        <span class="material-symbols-outlined text-xl text-white">search</span>
-                    </button>
-                    <button id="btn-logout" class="w-10 h-10 rounded-full bg-surface-dark border border-slate-700 flex items-center justify-center hover:bg-danger/20 hover:border-danger/50 transition-colors" title="Sign out">
-                        <span class="material-symbols-outlined text-xl text-white">logout</span>
-                    </button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-white">My Activities</h1>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <span class="text-slate-400 text-sm">Show expired</span>
+                        <div id="toggle-expired" class="toggle-track">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </label>
                 </div>
             </div>
-
-            <!-- Search Bar (Hidden by default) -->
-            <div id="search-container" class="hidden px-5 pb-4">
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xl">search</span>
-                    <input id="search-input" type="text" placeholder="Find events, hobbies..."
-                        class="w-full bg-surface-dark border border-slate-800 rounded-2xl py-3.5 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"/>
-                </div>
-            </div>
-
         </header>
 
         <!-- Main Content -->
         <main class="flex-1 px-5 pb-safe">
-            <!-- Section Header -->
-            <div class="flex items-center justify-between py-4">
-                <h2 class="text-lg font-bold text-white">Upcoming Nearby</h2>
-                <button class="text-primary text-xs font-bold tracking-wide hover:text-primary/80 transition-colors">SEE ALL</button>
-            </div>
-
             <!-- Activities List -->
-            <div id="activities-list" class="space-y-6">
+            <div id="activities-list" class="space-y-6 py-4">
                 <!-- Loading skeleton -->
                 <div class="activity-skeleton bg-surface-dark rounded-3xl border border-slate-800 overflow-hidden animate-pulse">
                     <div class="h-56 bg-slate-800"></div>
@@ -147,9 +146,13 @@
 
             <!-- Empty State -->
             <div id="empty-state" class="hidden py-16 text-center">
-                <div class="text-6xl mb-4">🔍</div>
-                <h3 class="text-xl font-bold text-white mb-2">No activities found</h3>
-                <p class="text-slate-500 text-sm max-w-xs mx-auto">Try adjusting your filters or check back later for new activities.</p>
+                <span class="material-symbols-outlined text-6xl text-slate-600 mb-4 block">event_note</span>
+                <h3 class="text-xl font-bold text-white mb-2">No activities yet</h3>
+                <p class="text-slate-500 text-sm max-w-xs mx-auto mb-6">You haven't created any activities. Start by creating your first one!</p>
+                <a href="/create-activity" class="inline-flex items-center gap-2 bg-primary text-white font-bold py-3 px-6 rounded-xl hover:bg-primary/90 transition-colors">
+                    <span class="material-symbols-outlined text-xl">add</span>
+                    Create Activity
+                </a>
             </div>
         </main>
 
@@ -161,11 +164,11 @@
         <!-- Bottom Navigation (Mobile Only) -->
         <nav class="fixed bottom-0 left-0 right-0 bg-surface-dark border-t border-white/10 z-50 sm:hidden bottom-nav">
             <div class="max-w-2xl mx-auto flex items-center justify-around py-2">
-                <a href="/" class="nav-item active flex flex-col items-center py-2 px-3 min-w-[56px]">
+                <a href="/" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
                     <span class="material-symbols-outlined text-2xl">explore</span>
                     <span class="text-[10px] mt-1 font-medium">Explore</span>
                 </a>
-                <a href="/my-activities" class="nav-item flex flex-col items-center py-2 px-3 min-w-[56px]">
+                <a href="/my-activities" class="nav-item active flex flex-col items-center py-2 px-3 min-w-[56px]">
                     <span class="material-symbols-outlined text-2xl">list_alt</span>
                     <span class="text-[10px] mt-1 font-medium">Mine</span>
                 </a>
@@ -186,52 +189,6 @@
         </nav>
     </div>
 
-    <!-- Filter Modal -->
-    <div id="filter-modal" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="filter-backdrop"></div>
-        <div class="absolute bottom-0 left-0 right-0 bg-surface-dark rounded-t-3xl max-h-[80vh] overflow-y-auto sm:max-w-lg sm:mx-auto sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:rounded-2xl">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">Filters</h2>
-                    <button id="close-filter" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-white">close</span>
-                    </button>
-                </div>
-                <!-- Distance -->
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-slate-300 mb-3">Distance</label>
-                    <div class="flex gap-2">
-                        <button class="filter-btn active flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="5">5 km</button>
-                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="10">10 km</button>
-                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="25">25 km</button>
-                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-km="50">50 km</button>
-                    </div>
-                </div>
-                <!-- When -->
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold text-slate-300 mb-3">When</label>
-                    <div class="flex gap-2 flex-wrap">
-                        <button class="filter-btn active px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="anytime">Anytime</button>
-                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="today">Today</button>
-                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="tomorrow">Tomorrow</button>
-                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="week">This Week</button>
-                        <button class="filter-btn px-4 py-2 rounded-xl text-sm font-medium transition-all" data-when="weekend">Weekend</button>
-                    </div>
-                </div>
-                <!-- Sort -->
-                <div class="mb-8">
-                    <label class="block text-sm font-semibold text-slate-300 mb-3">Sort By</label>
-                    <div class="flex gap-2">
-                        <button class="filter-btn active flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="date">Date</button>
-                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="distance">Distance</button>
-                        <button class="filter-btn flex-1 py-2 rounded-xl text-sm font-medium transition-all" data-sort="popular">Popular</button>
-                    </div>
-                </div>
-                <button id="apply-filters" class="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors">Apply Filters</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Activity Card Template -->
     <template id="activity-card-template">
         <article class="activity-card bg-surface-dark rounded-3xl border border-slate-800 overflow-hidden cursor-pointer hover:border-slate-700 transition-all">
@@ -241,11 +198,14 @@
                 <div class="expired-badge hidden absolute top-4 left-4 px-3 py-1.5 bg-danger/20 border border-danger/30 rounded-lg">
                     <span class="text-danger text-xs font-bold">Expired</span>
                 </div>
+                <div class="status-badge hidden absolute top-4 right-4 px-3 py-1.5 rounded-lg">
+                    <span class="text-xs font-bold"></span>
+                </div>
             </div>
             <div class="p-5">
                 <div class="flex items-center justify-between mb-2">
                     <span class="activity-category text-emerald text-sm font-bold uppercase"></span>
-                    <span class="activity-distance text-primary text-sm font-bold"></span>
+                    <span class="activity-status text-sm font-bold"></span>
                 </div>
                 <h3 class="activity-title text-xl font-bold text-white mb-2 line-clamp-2"></h3>
                 <div class="flex items-center gap-1.5 text-slate-400 text-base mb-2">
@@ -268,18 +228,15 @@
 
     <script>
         // State
-        let activities = [];
-        let searchQuery = '';
-        let filters = { distance: 5, when: 'anytime', sort: 'date' };
+        let allActivities = [];
+        let showExpired = false;
 
         // DOM
         const activitiesList = document.getElementById('activities-list');
         const loadingState = document.getElementById('loading-state');
         const emptyState = document.getElementById('empty-state');
-        const searchContainer = document.getElementById('search-container');
-        const searchInput = document.getElementById('search-input');
-        const filterModal = document.getElementById('filter-modal');
         const cardTemplate = document.getElementById('activity-card-template');
+        const toggleExpired = document.getElementById('toggle-expired');
 
         const categoryColors = {
             'sports': 'text-emerald', 'music': 'text-purple-400', 'art': 'text-pink-400',
@@ -287,67 +244,30 @@
             'gaming': 'text-red-400', 'technology': 'text-blue-400', 'default': 'text-emerald'
         };
 
-        // Toggle search
-        document.getElementById('btn-search').addEventListener('click', () => {
-            searchContainer.classList.toggle('hidden');
-            if (!searchContainer.classList.contains('hidden')) searchInput.focus();
+        const statusColors = {
+            'OPEN': { text: 'text-success', bg: 'bg-success/20 border border-success/30' },
+            'FULL': { text: 'text-warning', bg: 'bg-warning/20 border border-warning/30' },
+            'CANCELLED': { text: 'text-danger', bg: 'bg-danger/20 border border-danger/30' },
+            'COMPLETED': { text: 'text-slate-400', bg: 'bg-white/10 border border-white/20' },
+        };
+
+        // Toggle expired
+        toggleExpired.addEventListener('click', () => {
+            showExpired = !showExpired;
+            toggleExpired.classList.toggle('active', showExpired);
+            localStorage.setItem('myActivities_showExpired', showExpired);
+            renderActivities();
         });
 
-        // Search
-        let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                searchQuery = e.target.value.trim();
-                loadActivities();
-            }, 300);
-        });
-
-        // Filter modal
-        document.getElementById('btn-filter').addEventListener('click', () => filterModal.classList.remove('hidden'));
-        document.getElementById('filter-backdrop').addEventListener('click', () => filterModal.classList.add('hidden'));
-        document.getElementById('close-filter').addEventListener('click', () => filterModal.classList.add('hidden'));
-
-        // Filter buttons
-        document.querySelectorAll('.filter-btn[data-km]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn[data-km]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filters.distance = parseInt(btn.dataset.km);
-            });
-        });
-        document.querySelectorAll('.filter-btn[data-when]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn[data-when]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filters.when = btn.dataset.when;
-            });
-        });
-        document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn[data-sort]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                filters.sort = btn.dataset.sort;
-            });
-        });
-        document.getElementById('apply-filters').addEventListener('click', () => {
-            filterModal.classList.add('hidden');
-            loadActivities();
-        });
+        // Restore toggle state
+        if (localStorage.getItem('myActivities_showExpired') === 'true') {
+            showExpired = true;
+            toggleExpired.classList.add('active');
+        }
 
         // FAB
         document.getElementById('fab-create').addEventListener('click', () => {
             window.location.href = '/create-activity';
-        });
-
-        // Sign out
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            try {
-                await fetch('/api/users/web-logout', { method: 'POST' });
-            } catch (e) {}
-            document.cookie = 'userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            window.location.href = '/login';
         });
 
         // Helpers
@@ -357,10 +277,22 @@
         }
         function formatTime(timeStr) {
             if (!timeStr) return '';
+            if (timeStr.includes('T')) {
+                const date = new Date(timeStr);
+                return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
             const [hours, minutes] = timeStr.split(':');
             const date = new Date();
             date.setHours(parseInt(hours), parseInt(minutes));
             return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function isExpired(activity) {
+            const dateStr = activity.activityDate || activity.date;
+            if (!dateStr) return false;
+            const isPast = new Date(dateStr) < new Date();
+            const status = activity.status;
+            return isPast || status === 'EXPIRED' || status === 'CANCELLED' || status === 'COMPLETED';
         }
 
         // Create card
@@ -373,68 +305,67 @@
             img.alt = activity.title;
             img.onerror = () => img.src = 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=400&h=300&fit=crop';
 
-            if (activity.expired) card.querySelector('.expired-badge').classList.remove('hidden');
+            const expired = isExpired(activity);
+            if (expired) {
+                card.querySelector('.expired-badge').classList.remove('hidden');
+                card.classList.add('opacity-70');
+            }
+
+            // Status badge
+            const status = activity.status;
+            if (status && statusColors[status]) {
+                const statusBadge = card.querySelector('.status-badge');
+                statusBadge.classList.remove('hidden');
+                statusBadge.className = `status-badge absolute top-4 right-4 px-3 py-1.5 rounded-lg ${statusColors[status].bg}`;
+                statusBadge.querySelector('span').textContent = status;
+                statusBadge.querySelector('span').className = `text-xs font-bold ${statusColors[status].text}`;
+            }
 
             const categoryEl = card.querySelector('.activity-category');
             categoryEl.textContent = activity.category || 'Activity';
             const catKey = (activity.category || '').toLowerCase();
             categoryEl.className = `activity-category text-sm font-bold uppercase ${categoryColors[catKey] || categoryColors.default}`;
 
-            card.querySelector('.activity-distance').textContent = activity.distance ? `${activity.distance.toFixed(1)} km` : '';
             card.querySelector('.activity-title').textContent = activity.title;
-            card.querySelector('.activity-date').textContent = formatDate(activity.date || activity.activityDate || activity.startDate);
-            card.querySelector('.activity-time').textContent = formatTime(activity.time || activity.startTime);
+            card.querySelector('.activity-date').textContent = formatDate(activity.activityDate || activity.date || activity.startDate);
+            card.querySelector('.activity-time').textContent = formatTime(activity.activityDate || activity.time || activity.startTime);
             card.querySelector('.activity-location').textContent = activity.location || activity.address || 'Location TBD';
 
-            const curr = activity.currentParticipants || activity.participantCount || 0;
-            const max = activity.maxParticipants || activity.spots || 0;
+            const curr = activity.participantsCount || activity.currentParticipants || 0;
+            const max = activity.totalSpots || activity.maxParticipants || 0;
             card.querySelector('.activity-spots').textContent = `${curr}/${max} spots`;
-
-            const avatarStack = card.querySelector('.avatar-stack');
-            if (activity.participants?.length > 0) {
-                const maxAv = Math.min(3, activity.participants.length);
-                for (let i = 0; i < maxAv; i++) {
-                    const av = document.createElement('div');
-                    av.className = 'w-8 h-8 rounded-full bg-slate-600 border-2 border-surface-dark flex items-center justify-center text-xs font-bold text-white';
-                    const name = activity.participants[i].name || activity.participants[i].fullName || '?';
-                    av.textContent = name.charAt(0).toUpperCase();
-                    avatarStack.appendChild(av);
-                }
-                if (activity.participants.length > 3) {
-                    const more = document.createElement('div');
-                    more.className = 'w-8 h-8 rounded-full bg-primary/20 border-2 border-surface-dark flex items-center justify-center text-xs font-bold text-primary';
-                    more.textContent = `+${activity.participants.length - 3}`;
-                    avatarStack.appendChild(more);
-                }
-            }
 
             card.addEventListener('click', () => window.location.href = `/activity/${activity.id}`);
             return card;
         }
 
-        // Load activities
+        // Render filtered activities
+        function renderActivities() {
+            activitiesList.innerHTML = '';
+            const filtered = showExpired ? allActivities : allActivities.filter(a => !isExpired(a));
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(act => activitiesList.appendChild(createActivityCard(act)));
+            }
+        }
+
+        // Load activities from API
         async function loadActivities() {
             loadingState.classList.remove('hidden');
             emptyState.classList.add('hidden');
             activitiesList.innerHTML = '';
 
             try {
-                const params = new URLSearchParams();
-                if (searchQuery) params.append('search', searchQuery);
-                params.append('distance', filters.distance);
-                params.append('sort', filters.sort);
-                if (filters.when !== 'anytime') params.append('when', filters.when);
-
-                const response = await fetch(`/api/activities/v2?${params}`);
+                const response = await fetch('/api/activities/my-activities');
                 if (response.ok) {
                     const data = await response.json();
-                    activities = Array.isArray(data) ? data : (data.content || []);
-
-                    if (activities.length === 0) {
-                        emptyState.classList.remove('hidden');
-                    } else {
-                        activities.forEach(act => activitiesList.appendChild(createActivityCard(act)));
-                    }
+                    allActivities = Array.isArray(data) ? data : (data.content || []);
+                    renderActivities();
+                } else if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login';
                 } else {
                     emptyState.classList.remove('hidden');
                 }

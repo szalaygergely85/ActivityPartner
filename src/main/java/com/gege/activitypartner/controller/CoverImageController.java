@@ -62,6 +62,15 @@ public class CoverImageController {
     return ResponseEntity.status(HttpStatus.CREATED).body(result);
   }
 
+  // Upload new cover image (any authenticated user)
+  @PostMapping("/v2/upload")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<CoverImageDTO> uploadCoverImageV2(
+      @RequestParam("file") MultipartFile file, @RequestParam("displayName") String displayName) {
+    CoverImageDTO result = coverImageService.uploadCoverImage(file, displayName);
+    return ResponseEntity.status(HttpStatus.CREATED).body(result);
+  }
+
   // Deactivate cover image (admin only)
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")

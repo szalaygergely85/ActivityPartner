@@ -45,14 +45,28 @@ public class SecurityContextUtil {
    */
   public Long getCurrentUserId() {
     try {
-      // Extract JWT token from Authorization header
-      final String authHeader = request.getHeader("Authorization");
+      String jwt = null;
 
-      if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        throw new RuntimeException("No valid Authorization header found");
+      // Try Authorization header first (mobile apps)
+      final String authHeader = request.getHeader("Authorization");
+      if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        jwt = authHeader.substring(7);
       }
 
-      final String jwt = authHeader.substring(7);
+      // Fallback to cookie (web app)
+      if (jwt == null && request.getCookies() != null) {
+        jwt =
+            java.util.Arrays.stream(request.getCookies())
+                .filter(cookie -> "accessToken".equals(cookie.getName()))
+                .map(jakarta.servlet.http.Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+      }
+
+      if (jwt == null) {
+        throw new RuntimeException("No valid Authorization header or accessToken cookie found");
+      }
+
       Long userId = jwtUtil.extractUserId(jwt);
 
       if (userId == null) {
