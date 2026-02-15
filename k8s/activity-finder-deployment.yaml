@@ -41,7 +41,7 @@ spec:
               subPath: serviceAccountKey.json
               readOnly: true
             - name: image-storage
-              mountPath: /images
+              mountPath: /uploads
       volumes:
         - name: firebase-credentials
           secret:
