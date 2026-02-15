@@ -34,13 +34,12 @@ spec:
               mountPath: /app/config/serviceAccountKey.json
               subPath: serviceAccountKey.json
               readOnly: true
-            - name: image-storage-af
+            - name: image-storage
               mountPath: /images
       volumes:
         - name: firebase-credentials
           secret:
             secretName: firebase-credentials
-        - name: image-storage-af
-          hostPath:
-            path: /data/activity-finder/images
-            type: DirectoryOrCreate
+        - name: image-storage
+          persistentVolumeClaim:
+            claimName: activity-finder-pvc
