@@ -65,7 +65,11 @@ jobs:
             --from-literal=SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
             --dry-run=client -o yaml | kubectl apply -f -
           
-         
+      - name: Create Google API Key Secret
+        run: |
+          kubectl create secret generic google-api-key \
+            --from-literal=GOOGLE_KEY=${{ secrets.GOOGLE_KEY }} \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Create Kubernetes Secret from Firebase credentials
         run: |

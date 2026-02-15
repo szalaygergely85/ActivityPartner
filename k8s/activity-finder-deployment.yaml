@@ -16,6 +16,7 @@ spec:
       containers:
         - name: activity-finder
           image: gery12492/activity-finder:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -27,8 +28,13 @@ spec:
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rest-server-secret
+                  name: activity-finder-secret
                   key: SPRING_DATASOURCE_PASSWORD
+            - name: GOOGLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-api-key
+                  key: GOOGLE_KEY
           volumeMounts:
             - name: firebase-credentials
               mountPath: /app/config/serviceAccountKey.json
