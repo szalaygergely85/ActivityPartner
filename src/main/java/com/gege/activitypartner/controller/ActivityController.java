@@ -161,6 +161,18 @@ public class ActivityController {
     return ResponseEntity.ok(response);
   }
 
+  // Get non-expired, open activities with distance calculated from user's saved location
+  @GetMapping("/v2")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<List<ActivityResponseDTO>> getActivitiesV2() {
+    String email = securityContextUtil.getCurrentUserEmail();
+    User user =
+        userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    List<ActivityResponseDTO> activities =
+        activityService.getAvailableUpcomingActivities(user.getId());
+    return ResponseEntity.ok(activities);
+  }
+
   // Delete activity
   @DeleteMapping("/{id}")
   @PreAuthorize("isAuthenticated()")

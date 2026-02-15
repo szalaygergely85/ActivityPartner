@@ -2,9 +2,11 @@ package com.gege.activitypartner.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,18 +28,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    // Extract Authorization header
-    final String authHeader = request.getHeader("Authorization");
+    // Extract JWT token from Authorization header or cookie
+    String jwt = null;
 
-    // Check if Authorization header exists and starts with "Bearer "
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    // First, try Authorization header (for mobile apps)
+    final String authHeader = request.getHeader("Authorization");
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+      jwt = authHeader.substring(7);
+    }
+
+    // Fallback to cookie (for web app)
+    if (jwt == null && request.getCookies() != null) {
+      jwt =
+          Arrays.stream(request.getCookies())
+              .filter(cookie -> "accessToken".equals(cookie.getName()))
+              .map(Cookie::getValue)
+              .findFirst()
+              .orElse(null);
+    }
+
+    // No token found, continue without authentication
+    if (jwt == null) {
       filterChain.doFilter(request, response);
       return;
     }
 
     try {
-      // Extract JWT token from header
-      final String jwt = authHeader.substring(7);
+      // Extract user email from token
       final String userEmail = jwtUtil.extractUsername(jwt);
 
       // If token contains email and user is not already authenticated

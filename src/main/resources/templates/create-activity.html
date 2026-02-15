@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+    <title>Create Activity - Vivento</title>
+    <link rel="icon" type="image/svg+xml" href="/images/vivento.svg"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="/css/app.css" rel="stylesheet"/>
+    <script th:inline="javascript">
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.googleapis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: /*[[${googleMapsApiKey}]]*/ "",
+            v: "weekly",
+        });
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d7ff2",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#22c55e",
+                        "background-dark": "#0a0f14",
+                        "surface-dark": "#131b24",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .pb-safe { padding-bottom: max(100px, calc(80px + env(safe-area-inset-bottom))); }
+
+        /* Cover picker modal (bottom-sheet) */
+        .cover-modal-overlay {
+            position: fixed; inset: 0; z-index: 50;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .cover-modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .cover-modal-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 51;
+            background: #131b24; border-radius: 1.5rem 1.5rem 0 0;
+            max-height: 70vh; overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .cover-modal-overlay.active .cover-modal-sheet { transform: translateY(0); }
+
+        .cover-modal-sheet::-webkit-scrollbar { width: 4px; }
+        .cover-modal-sheet::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        /* Cover grid items */
+        .cover-grid-item {
+            aspect-ratio: 16/10; border-radius: 0.75rem; overflow: hidden;
+            cursor: pointer; position: relative;
+            border: 2px solid transparent;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        .cover-grid-item:hover { border-color: #0d7ff2; transform: scale(1.03); }
+        .cover-grid-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Google Places autocomplete dropdown dark theme */
+        .pac-container {
+            background-color: #131b24 !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 0.75rem !important;
+            margin-top: 4px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .pac-item {
+            background-color: #131b24 !important;
+            color: #e2e8f0 !important;
+            border-top: 1px solid rgba(255,255,255,0.05) !important;
+            padding: 10px 12px !important;
+            cursor: pointer !important;
+            line-height: 1.4 !important;
+        }
+        .pac-item:first-child { border-top: none !important; }
+        .pac-item:hover, .pac-item-selected {
+            background-color: rgba(13,127,242,0.12) !important;
+        }
+        .pac-item-query {
+            color: #ffffff !important;
+            font-size: 14px !important;
+        }
+        .pac-matched { color: #0d7ff2 !important; font-weight: 600 !important; }
+        .pac-icon { display: none !important; }
+        .pac-item span:last-child {
+            color: #94a3b8 !important;
+            font-size: 12px !important;
+        }
+
+        /* Location preview */
+        #map-preview {
+            margin-top: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-custom text-white min-h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-background-dark/95 backdrop-blur-lg border-b border-white/5">
+        <div class="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
+            <button onclick="history.back()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined text-2xl text-white">arrow_back</span>
+            </button>
+            <h1 class="text-lg font-bold text-white">Create Activity</h1>
+            <div class="w-10"></div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 pb-safe">
+        <!-- Hero Card -->
+        <div class="mt-4 rounded-2xl overflow-hidden bg-primary">
+            <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&h=200&fit=crop" alt="" class="w-full h-40 object-cover"/>
+            <div class="p-4">
+                <h2 class="text-lg font-bold text-white">Let's get people together!</h2>
+                <p class="text-white/80 text-sm mt-1">Fill in the details below to host your event and build community.</p>
+            </div>
+        </div>
+
+        <form id="create-form" class="mt-6 space-y-8">
+            <!-- Basic Information -->
+            <section>
+                <h3 class="text-lg font-bold text-white mb-4">Basic Information</h3>
+
+                <!-- Title -->
+                <div class="mb-4">
+                    <label for="title" class="block text-sm font-medium text-white mb-2">Activity Title</label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            placeholder="Name your activity"
+                            required
+                            maxlength="100"
+                            class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xl">edit</span>
+                    </div>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-4">
+                    <label for="category" class="block text-sm font-medium text-white mb-2">Category</label>
+                    <div class="relative">
+                        <select
+                            id="category"
+                            name="category"
+                            required
+                            class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all appearance-none cursor-pointer"
+                        >
+                            <option value="" disabled selected>Select a category</option>
+                        </select>
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xl pointer-events-none">expand_more</span>
+                    </div>
+                </div>
+
+                <!-- Cover Image Picker -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-white mb-2">Cover Image (Optional)</label>
+                    <div
+                        id="cover-image-container"
+                        onclick="openCoverPicker()"
+                        class="relative h-36 rounded-2xl border-2 border-dashed border-slate-700 bg-surface-dark flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all overflow-hidden"
+                    >
+                        <div id="cover-placeholder" class="text-center">
+                            <span class="material-symbols-outlined text-4xl text-slate-500">add_photo_alternate</span>
+                            <p class="text-slate-400 text-sm mt-2">Tap to select cover image</p>
+                        </div>
+                        <img id="cover-preview" src="" alt="" class="hidden absolute inset-0 w-full h-full object-cover"/>
+                        <button type="button" id="remove-cover" onclick="event.stopPropagation(); removeCoverImage();" class="hidden absolute top-2 right-2 w-8 h-8 bg-danger/90 rounded-full flex items-center justify-center z-10">
+                            <span class="material-symbols-outlined text-white text-lg">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-white mb-2">Description</label>
+                    <div class="relative">
+                        <textarea
+                            id="description"
+                            name="description"
+                            placeholder="What will we do? Describe the vibe and any requirements."
+                            rows="4"
+                            maxlength="500"
+                            class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                        ></textarea>
+                        <span id="desc-counter" class="absolute bottom-3 right-3 text-xs text-slate-500">0/500</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- When & Where -->
+            <section>
+                <h3 class="text-lg font-bold text-white mb-4">When & Where</h3>
+
+                <!-- Date & Time Row -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <!-- Date -->
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-white mb-2">Date</label>
+                        <div class="relative">
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                required
+                                class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Time -->
+                    <div>
+                        <label for="time" class="block text-sm font-medium text-white mb-2">Time</label>
+                        <div class="relative">
+                            <input
+                                type="time"
+                                id="time"
+                                name="time"
+                                required
+                                class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location with Google Places Autocomplete -->
+                <div>
+                    <label for="location" class="block text-sm font-medium text-white mb-2">Location</label>
+                    <div class="relative">
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            placeholder="Search address or venue"
+                            required
+                            autocomplete="off"
+                            class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 pr-12 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xl">location_on</span>
+                    </div>
+                    <p class="text-slate-500 text-xs mt-2">Start typing to search for a place</p>
+                    <input type="hidden" id="placeId" name="placeId"/>
+                    <input type="hidden" id="latitude" name="latitude"/>
+                    <input type="hidden" id="longitude" name="longitude"/>
+                    <div id="map-preview" class="hidden"></div>
+                </div>
+            </section>
+
+            <!-- Capacity -->
+            <section>
+                <h3 class="text-lg font-bold text-white mb-4">Capacity</h3>
+
+                <div>
+                    <label for="spots" class="block text-sm font-medium text-white mb-2">Total Spots Available</label>
+                    <div class="relative w-48">
+                        <input
+                            type="number"
+                            id="spots"
+                            name="spots"
+                            placeholder="e.g. 10"
+                            min="1"
+                            max="1000"
+                            required
+                            class="w-full bg-surface-dark border border-slate-700 rounded-xl py-3.5 px-4 pr-12 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        />
+                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-primary text-xl">group</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden text-danger text-sm py-3 px-4 bg-danger/10 rounded-xl"></div>
+        </form>
+    </main>
+
+    <!-- Cover Image Picker Modal (Bottom Sheet) -->
+    <div id="cover-modal" class="cover-modal-overlay" onclick="closeCoverPicker(event)">
+        <div class="cover-modal-sheet" onclick="event.stopPropagation()">
+            <!-- Handle bar -->
+            <div class="flex justify-center pt-3 pb-1">
+                <div class="w-10 h-1 bg-white/20 rounded-full"></div>
+            </div>
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 py-3">
+                <h3 class="text-lg font-bold text-white">Choose Cover Image</h3>
+                <button onclick="closeCoverPicker()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-xl text-slate-400">close</span>
+                </button>
+            </div>
+            <!-- Grid -->
+            <div id="cover-grid" class="grid grid-cols-3 gap-2 px-5 pb-6">
+                <!-- Loading skeleton -->
+                <div id="cover-loading" class="col-span-3 flex items-center justify-center py-10">
+                    <svg class="animate-spin h-6 w-6 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="ml-3 text-slate-400 text-sm">Loading covers...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Bottom Button -->
+    <div class="fixed bottom-0 left-0 right-0 bg-background-dark/95 backdrop-blur-lg border-t border-white/10 p-4 z-40" style="padding-bottom: max(16px, env(safe-area-inset-bottom));">
+        <div class="max-w-2xl mx-auto">
+            <button
+                type="submit"
+                form="create-form"
+                id="submit-btn"
+                class="glow-button w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl text-base transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+                <span id="btn-icon" class="material-symbols-outlined text-xl">check_circle</span>
+                <span id="btn-text">Save Activity</span>
+                <span id="btn-spinner" class="hidden">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ─── Auth check ───
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        if (!getCookie('userId') && !getCookie('authToken')) {
+            window.location.href = '/login';
+        }
+
+        // ─── Load categories from API ───
+        (async () => {
+            try {
+                const res = await fetch('/api/categories');
+                if (res.ok) {
+                    const categories = await res.json();
+                    const select = document.getElementById('category');
+                    categories.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.name;
+                        opt.textContent = c.name;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) { /* select stays empty */ }
+        })();
+
+        // ─── Set min date to today ───
+        const dateInput = document.getElementById('date');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+
+        // ─── Description counter ───
+        const descInput = document.getElementById('description');
+        const descCounter = document.getElementById('desc-counter');
+        descInput.addEventListener('input', () => {
+            descCounter.textContent = `${descInput.value.length}/500`;
+        });
+
+        // ─── Cover Image Picker ───
+        let selectedCoverUrl = null;
+        let coversCache = null;
+        const coverModal = document.getElementById('cover-modal');
+        const coverGrid = document.getElementById('cover-grid');
+        const coverLoading = document.getElementById('cover-loading');
+        const coverPreview = document.getElementById('cover-preview');
+        const coverPlaceholder = document.getElementById('cover-placeholder');
+        const removeCoverBtn = document.getElementById('remove-cover');
+
+        function openCoverPicker() {
+            coverModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (!coversCache) {
+                loadCovers();
+            }
+        }
+
+        function closeCoverPicker(e) {
+            if (e && e.target !== coverModal) return;
+            coverModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function loadCovers() {
+            try {
+                const res = await fetch('/api/covers');
+                if (res.ok) {
+                    coversCache = await res.json();
+                    renderCoverGrid();
+                } else {
+                    coverLoading.innerHTML = '<span class="text-slate-400 text-sm">Failed to load covers</span>';
+                }
+            } catch (e) {
+                coverLoading.innerHTML = '<span class="text-slate-400 text-sm">Failed to load covers</span>';
+            }
+        }
+
+        function renderCoverGrid() {
+            coverGrid.innerHTML = '';
+            if (!coversCache || coversCache.length === 0) {
+                coverGrid.innerHTML = '<div class="col-span-3 text-center py-8 text-slate-400 text-sm">No cover images available</div>';
+                return;
+            }
+            coversCache.forEach(cover => {
+                const div = document.createElement('div');
+                div.className = 'cover-grid-item';
+                div.onclick = () => selectCover(cover.imageUrl);
+                const img = document.createElement('img');
+                img.src = cover.imageUrl;
+                img.alt = cover.displayName || '';
+                img.loading = 'lazy';
+                div.appendChild(img);
+                coverGrid.appendChild(div);
+            });
+        }
+
+        function selectCover(imageUrl) {
+            selectedCoverUrl = imageUrl;
+            coverPreview.src = imageUrl;
+            coverPreview.classList.remove('hidden');
+            coverPlaceholder.classList.add('hidden');
+            removeCoverBtn.classList.remove('hidden');
+            coverModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function removeCoverImage() {
+            selectedCoverUrl = null;
+            coverPreview.src = '';
+            coverPreview.classList.add('hidden');
+            coverPlaceholder.classList.remove('hidden');
+            removeCoverBtn.classList.add('hidden');
+        }
+
+        // ─── Google Maps Location Picker ───
+        let geocoder = null;
+        let userCountryCode = null;
+        let debounceTimer = null;
+        let isSelectingPlace = false;
+        let sessionToken = null;
+        let AutocompleteSuggestion = null;
+        let Place = null;
+        let AutocompleteSessionToken = null;
+        const DEBOUNCE_DELAY = 800; // ms, same as mobile
+
+        // Detect user's country from their profile location
+        async function detectUserCountry() {
+            try {
+                const userId = getCookie('userId');
+                if (!userId) return;
+                const res = await fetch(`/api/users/${userId}`);
+                if (!res.ok) return;
+                const user = await res.json();
+                if (user.latitude && user.longitude && geocoder) {
+                    const latlng = { lat: parseFloat(user.latitude), lng: parseFloat(user.longitude) };
+                    geocoder.geocode({ location: latlng }, (results, status) => {
+                        if (status === 'OK' && results && results.length > 0) {
+                            for (const component of results[0].address_components) {
+                                if (component.types.includes('country')) {
+                                    userCountryCode = component.short_name.toLowerCase();
+                                    console.log('Detected country:', userCountryCode);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.log('Country detection skipped:', e.message);
+            }
+        }
+
+        async function initMap() {
+            const locationInput = document.getElementById('location');
+
+            // Import libraries using the new pattern
+            const placesLib = await google.maps.importLibrary('places');
+            AutocompleteSuggestion = placesLib.AutocompleteSuggestion;
+            Place = placesLib.Place;
+            AutocompleteSessionToken = placesLib.AutocompleteSessionToken;
+            sessionToken = new AutocompleteSessionToken();
+
+            const geocodingLib = await google.maps.importLibrary('geocoding');
+            geocoder = new geocodingLib.Geocoder();
+
+            // Detect country from user's profile
+            detectUserCountry();
+
+            // Create custom dropdown container
+            const dropdownEl = document.createElement('div');
+            dropdownEl.id = 'places-dropdown';
+            dropdownEl.className = 'pac-container';
+            dropdownEl.style.display = 'none';
+            dropdownEl.style.position = 'absolute';
+            dropdownEl.style.zIndex = '9999';
+            dropdownEl.style.width = locationInput.offsetWidth + 'px';
+            locationInput.parentElement.style.position = 'relative';
+            locationInput.parentElement.appendChild(dropdownEl);
+
+            // Debounced search on input
+            locationInput.addEventListener('input', (e) => {
+                if (isSelectingPlace) return;
+
+                clearTimeout(debounceTimer);
+                const query = e.target.value.trim();
+
+                if (query.length < 2) {
+                    dropdownEl.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetchPredictions(query, dropdownEl, locationInput);
+                }, DEBOUNCE_DELAY);
+            });
+
+            // Hide dropdown on blur (with delay so click can register)
+            locationInput.addEventListener('blur', () => {
+                setTimeout(() => { dropdownEl.style.display = 'none'; }, 200);
+            });
+
+            // Prevent Enter from submitting form while dropdown is visible
+            locationInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && dropdownEl.style.display !== 'none') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        async function fetchPredictions(query, dropdownEl, inputEl) {
+            try {
+                const request = {
+                    input: query,
+                    sessionToken: sessionToken,
+                };
+
+                // Restrict to user's country if detected (like mobile CountryDetector)
+                if (userCountryCode) {
+                    request.includedRegionCodes = [userCountryCode];
+                }
+
+                const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+                dropdownEl.innerHTML = '';
+
+                if (!suggestions || suggestions.length === 0) {
+                    dropdownEl.style.display = 'none';
+                    return;
+                }
+
+                suggestions.forEach(suggestion => {
+                    const prediction = suggestion.placePrediction;
+                    const item = document.createElement('div');
+                    item.className = 'pac-item';
+                    item.innerHTML = `<span class="pac-item-query">${prediction.mainText}</span> <span>${prediction.secondaryText || ''}</span>`;
+                    item.addEventListener('mousedown', (e) => {
+                        e.preventDefault(); // Prevent blur from firing before click
+                        selectPrediction(prediction, inputEl, dropdownEl);
+                    });
+                    dropdownEl.appendChild(item);
+                });
+
+                dropdownEl.style.display = 'block';
+                dropdownEl.style.width = inputEl.offsetWidth + 'px';
+            } catch (e) {
+                console.error('Autocomplete error:', e);
+                dropdownEl.style.display = 'none';
+            }
+        }
+
+        async function selectPrediction(prediction, inputEl, dropdownEl) {
+            isSelectingPlace = true;
+            dropdownEl.style.display = 'none';
+            inputEl.value = prediction.text.text;
+
+            try {
+                // Convert to Place and fetch details (concludes the session)
+                const place = prediction.toPlace();
+                await place.fetchFields({ fields: ['location', 'formattedAddress', 'displayName'] });
+
+                const lat = place.location.lat();
+                const lng = place.location.lng();
+                document.getElementById('placeId').value = place.id || '';
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                inputEl.value = place.formattedAddress || place.displayName || prediction.text.text;
+
+                // Start a new session for the next search
+                sessionToken = new AutocompleteSessionToken();
+
+                showMap(lat, lng);
+            } catch (e) {
+                console.error('Place details error:', e);
+            } finally {
+                isSelectingPlace = false;
+            }
+        }
+
+        // Show location preview (no Maps JavaScript API needed — same as Android preview-only MapView)
+        function showMap(lat, lng) {
+            const mapDiv = document.getElementById('map-preview');
+            mapDiv.classList.remove('hidden');
+            const address = document.getElementById('location').value || '';
+            mapDiv.innerHTML = `
+                <div class="flex items-center gap-3 px-4 py-3 bg-surface-dark rounded-xl border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-primary text-xl">location_on</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-white text-sm font-medium truncate">${address || 'Location selected'}</p>
+                        <p class="text-slate-500 text-xs mt-0.5">${lat.toFixed(5)}, ${lng.toFixed(5)}</p>
+                    </div>
+                    <span class="material-symbols-outlined text-success text-xl flex-shrink-0">check_circle</span>
+                </div>
+            `;
+        }
+
+        // Initialize — importLibrary is available immediately from the bootstrap loader
+        initMap();
+
+        // ─── Form submission ───
+        const form = document.getElementById('create-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnIcon = document.getElementById('btn-icon');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            btnIcon.classList.add('hidden');
+            btnText.textContent = 'Creating...';
+            btnSpinner.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+
+            try {
+                // Build activity data
+                const activityData = {
+                    title: document.getElementById('title').value.trim(),
+                    category: document.getElementById('category').value,
+                    description: document.getElementById('description').value.trim(),
+                    activityDate: document.getElementById('date').value + 'T' + document.getElementById('time').value + ':00',
+                    location: document.getElementById('location').value.trim(),
+                };
+
+                const spots = document.getElementById('spots').value;
+                if (spots) {
+                    activityData.totalSpots = parseInt(spots);
+                }
+
+                // Cover image (URL from picker, no file upload)
+                if (selectedCoverUrl) {
+                    activityData.coverImageUrl = selectedCoverUrl;
+                }
+
+                // Location coordinates
+                const placeId = document.getElementById('placeId').value;
+                const lat = document.getElementById('latitude').value;
+                const lng = document.getElementById('longitude').value;
+                if (placeId) activityData.placeId = placeId;
+                if (lat) activityData.latitude = parseFloat(lat);
+                if (lng) activityData.longitude = parseFloat(lng);
+
+                // Create activity
+                const response = await fetch('/api/activities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(activityData)
+                });
+
+                if (response.ok) {
+                    const activity = await response.json();
+                    window.location.href = activity.id ? `/activity/${activity.id}` : '/';
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || data.error || 'Failed to create activity');
+                }
+            } catch (error) {
+                errorMessage.textContent = error.message || 'Something went wrong. Please try again.';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                btnIcon.classList.remove('hidden');
+                btnText.textContent = 'Save Activity';
+                btnSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
