@@ -52,9 +52,16 @@ public class UserPhotoService {
     photo.setUser(user);
     photo.setPhotoUrl(photoUrl);
     photo.setDisplayOrder((int) (photoCount + 1)); // Set display order (1-6)
-    photo.setIsProfilePicture(photoCount == 0); // First photo is automatically the profile picture
+    boolean isFirstPhoto = photoCount == 0;
+    photo.setIsProfilePicture(isFirstPhoto); // First photo is automatically the profile picture
 
     UserPhoto savedPhoto = userPhotoRepository.save(photo);
+
+    // If this is the first photo, also set it as the user's profile image
+    if (isFirstPhoto) {
+      user.setProfileImageUrl(photoUrl);
+      userRepository.save(user);
+    }
 
     return mapToResponse(savedPhoto).getPhotoUrl();
   }
