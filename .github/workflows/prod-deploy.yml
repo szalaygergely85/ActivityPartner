@@ -73,7 +73,7 @@ jobs:
 
       - name: Create Kubernetes Secret from Firebase credentials
         run: |
-          echo "${{ secrets.FIREBASE_SECRET }}" > serviceAccountKey.json
+          echo "${{ secrets.FIREBASE_SECRET }}" | base64 -d > serviceAccountKey.json
           kubectl create secret generic activity-finder-firebase-credentials \
           --from-file=serviceAccountKey.json \
           --dry-run=client -o yaml | kubectl apply -f -
