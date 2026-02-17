@@ -6,16 +6,21 @@ import com.gege.activitypartner.dto.CategoryUpdateRequest;
 import com.gege.activitypartner.dto.CoverImageDTO;
 import com.gege.activitypartner.entity.AccountDeletionRequest;
 import com.gege.activitypartner.entity.AppLog;
-import com.gege.activitypartner.entity.CrashLog;
 import com.gege.activitypartner.entity.DownloadLog;
 import com.gege.activitypartner.service.AdminService;
 import com.gege.activitypartner.service.CategoryService;
 import com.gege.activitypartner.service.CoverImageService;
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,16 +78,34 @@ public class AdminController {
     return ResponseEntity.ok(Map.of("success", true));
   }
 
-  // Get crash logs
-  @GetMapping("/crash-logs")
-  public ResponseEntity<?> getCrashLogs(HttpServletRequest request) {
+  // List crash log files
+  @GetMapping("/crash-logs/files")
+  public ResponseEntity<?> getCrashLogFiles(HttpServletRequest request) {
     Long adminId = validateAdmin(request);
     if (adminId == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
     }
+    return ResponseEntity.ok(adminService.getCrashLogFiles());
+  }
 
-    List<CrashLog> logs = adminService.getRecentCrashLogs();
-    return ResponseEntity.ok(logs);
+  // Download a crash log file
+  @GetMapping("/crash-logs/download/{filename}")
+  public ResponseEntity<Resource> downloadCrashLogFile(
+      @PathVariable String filename, HttpServletRequest request) throws IOException {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    Path file = adminService.getCrashLogFile(filename);
+    if (file == null) {
+      return ResponseEntity.notFound().build();
+    }
+    Resource resource = new PathResource(file);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .contentLength(file.toFile().length())
+        .body(resource);
   }
 
   // Get download logs
@@ -123,6 +146,36 @@ public class AdminController {
 
     List<AppLog> logs = adminService.getRecentAppLogs();
     return ResponseEntity.ok(logs);
+  }
+
+  // List server log files
+  @GetMapping("/server-logs/files")
+  public ResponseEntity<?> getServerLogFiles(HttpServletRequest request) {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+    }
+    return ResponseEntity.ok(adminService.getServerLogFiles());
+  }
+
+  // Download a server log file
+  @GetMapping("/server-logs/download/{filename}")
+  public ResponseEntity<Resource> downloadServerLogFile(
+      @PathVariable String filename, HttpServletRequest request) throws IOException {
+    Long adminId = validateAdmin(request);
+    if (adminId == null) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+    Path file = adminService.getServerLogFile(filename);
+    if (file == null) {
+      return ResponseEntity.notFound().build();
+    }
+    Resource resource = new PathResource(file);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .contentType(MediaType.TEXT_PLAIN)
+        .contentLength(file.toFile().length())
+        .body(resource);
   }
 
   // ============= CATEGORIES =============

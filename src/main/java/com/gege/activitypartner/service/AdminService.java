@@ -11,8 +11,15 @@ import com.gege.activitypartner.repository.AdminRepository;
 import com.gege.activitypartner.repository.AppLogRepository;
 import com.gege.activitypartner.repository.CrashLogRepository;
 import com.gege.activitypartner.repository.DownloadLogRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -102,6 +109,70 @@ public class AdminService {
   // Get recent app logs
   public List<AppLog> getRecentAppLogs() {
     return appLogRepository.findTop100ByOrderByReceivedAtDesc();
+  }
+
+  // List server log files (newest first)
+  public List<Map<String, Object>> getServerLogFiles() {
+    Path logsDir = Paths.get("logs");
+    return listFiles(logsDir, "application");
+  }
+
+  // Get a server log file for download (validates filename to prevent path traversal)
+  public Path getServerLogFile(String filename) {
+    if (!filename.startsWith("application")
+        || !filename.endsWith(".log")
+        || filename.contains("/")
+        || filename.contains("\\")
+        || filename.contains("..")) {
+      return null;
+    }
+    Path file = Paths.get("logs").resolve(filename);
+    return Files.exists(file) ? file : null;
+  }
+
+  // List crash log files (newest first)
+  public List<Map<String, Object>> getCrashLogFiles() {
+    Path crashDir = Paths.get("logs/crashes");
+    return listFiles(crashDir, "crashes-");
+  }
+
+  // Get a crash log file for download (validates filename to prevent path traversal)
+  public Path getCrashLogFile(String filename) {
+    if (!filename.startsWith("crashes-")
+        || !filename.endsWith(".json")
+        || filename.contains("/")
+        || filename.contains("\\")
+        || filename.contains("..")) {
+      return null;
+    }
+    Path file = Paths.get("logs/crashes").resolve(filename);
+    return Files.exists(file) ? file : null;
+  }
+
+  private List<Map<String, Object>> listFiles(Path dir, String prefix) {
+    List<Map<String, Object>> result = new ArrayList<>();
+    if (!Files.exists(dir)) {
+      return result;
+    }
+    try (var stream = Files.list(dir)) {
+      stream
+          .filter(p -> p.getFileName().toString().startsWith(prefix))
+          .sorted(Comparator.comparing((Path p) -> p.getFileName().toString()).reversed())
+          .forEach(
+              p -> {
+                try {
+                  result.add(
+                      Map.of(
+                          "filename", p.getFileName().toString(),
+                          "sizeBytes", Files.size(p),
+                          "lastModified", Files.getLastModifiedTime(p).toInstant().toString()));
+                } catch (IOException ignored) {
+                }
+              });
+    } catch (IOException e) {
+      // return empty list
+    }
+    return result;
   }
 
   // Create admin (for initial setup - call manually or via initializer)
