@@ -45,7 +45,7 @@ spec:
       volumes:
         - name: firebase-credentials
           secret:
-            secretName: firebase-credentials
+            secretName: activity-finder-firebase-credentials
         - name: image-storage
           persistentVolumeClaim:
             claimName: activity-finder-pvc
