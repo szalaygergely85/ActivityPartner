@@ -52,10 +52,10 @@ public class NotificationService {
 
     notification = notificationRepository.save(notification);
 
-    // Send push notification if user has notifications enabled and FCM token
-    if (user.getNotificationsEnabled()
-        && user.getFcmToken() != null
-        && !user.getFcmToken().isEmpty()) {
+    // Send push notification if user has the relevant preference enabled and has an FCM token
+    if (user.getFcmToken() != null
+        && !user.getFcmToken().isEmpty()
+        && isNotificationAllowed(user, type)) {
       Map<String, String> data = buildNotificationData(type, activityId, participantId, reviewId);
       boolean sent =
           firebaseMessagingService.sendNotification(user.getFcmToken(), title, message, data);
@@ -64,6 +64,32 @@ public class NotificationService {
     }
 
     return notification;
+  }
+
+  /** Check whether a notification type is allowed by the user's preferences */
+  private boolean isNotificationAllowed(User user, NotificationType type) {
+    if (!Boolean.TRUE.equals(user.getNotificationsEnabled())) {
+      return false;
+    }
+    if (type == NotificationType.ACTIVITY_REMINDER) {
+      return Boolean.TRUE.equals(user.getRemindersEnabled());
+    }
+    switch (type) {
+      case ACTIVITY_CREATED:
+      case ACTIVITY_UPDATED:
+      case ACTIVITY_CANCELLED:
+      case ACTIVITY_COMPLETED:
+      case PARTICIPANT_INTERESTED:
+      case PARTICIPANT_ACCEPTED:
+      case PARTICIPANT_DECLINED:
+      case PARTICIPANT_JOINED:
+      case PARTICIPANT_LEFT:
+      case REVIEW_RECEIVED:
+      case NEW_MESSAGE:
+        return Boolean.TRUE.equals(user.getActivityUpdatesEnabled());
+      default:
+        return true; // System notifications (badges, milestones, general) are always sent
+    }
   }
 
   /** Build data payload for FCM notification */
@@ -176,15 +202,21 @@ public class NotificationService {
 
   /** Update notification preferences */
   @Transactional
-  public void updateNotificationPreference(Long userId, Boolean enabled) {
+  public void updateNotificationPreference(
+      Long userId, Boolean activityUpdatesEnabled, Boolean remindersEnabled) {
     User user =
         userRepository
             .findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    user.setNotificationsEnabled(enabled);
+    user.setActivityUpdatesEnabled(activityUpdatesEnabled);
+    user.setRemindersEnabled(remindersEnabled);
     userRepository.save(user);
-    log.info("Updated notification preference for user {}: {}", userId, enabled);
+    log.info(
+        "Updated notification preferences for user {}: activityUpdates={}, reminders={}",
+        userId,
+        activityUpdatesEnabled,
+        remindersEnabled);
   }
 
   /** Cleanup old read notifications (can be scheduled) */

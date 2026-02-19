@@ -82,7 +82,13 @@ public class User {
   private String fcmToken; // Firebase Cloud Messaging device token for push notifications
 
   @Column(nullable = false)
-  private Boolean notificationsEnabled = true; // User preference for receiving notifications
+  private Boolean notificationsEnabled = true; // Master switch for all notifications
+
+  @Column(nullable = false)
+  private Boolean activityUpdatesEnabled = true; // Updates: joins, cancellations, messages, etc.
+
+  @Column(nullable = false)
+  private Boolean remindersEnabled = true; // Reminders before an activity starts
 
   @Column(nullable = false)
   private Boolean isActive = true;

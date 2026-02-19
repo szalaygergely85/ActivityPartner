@@ -40,13 +40,13 @@ public class NotificationController {
       @Valid @RequestBody NotificationPreferenceRequest request) {
     Long userId = securityContextUtil.getCurrentUserId();
 
-    notificationService.updateNotificationPreference(userId, request.getNotificationsEnabled());
+    notificationService.updateNotificationPreference(
+        userId, request.getActivityUpdatesEnabled(), request.getRemindersEnabled());
     return ResponseEntity.ok(
         Map.of(
-            "message",
-            "Notification preferences updated",
-            "notificationsEnabled",
-            request.getNotificationsEnabled().toString()));
+            "message", "Notification preferences updated",
+            "activityUpdatesEnabled", request.getActivityUpdatesEnabled().toString(),
+            "remindersEnabled", request.getRemindersEnabled().toString()));
   }
 
   // Get all notifications for current user
