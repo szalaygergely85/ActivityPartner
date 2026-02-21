@@ -36,8 +36,7 @@ public class FirebaseMessagingService {
       fullData.put("body", body != null ? body : "");
 
       // Build message
-      Message.Builder messageBuilder =
-          Message.builder().setToken(fcmToken).putAllData(fullData);
+      Message.Builder messageBuilder = Message.builder().setToken(fcmToken).putAllData(fullData);
 
       // Send message
       String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
@@ -142,8 +141,7 @@ public class FirebaseMessagingService {
       fullData.put("title", title != null ? title : "");
       fullData.put("body", body != null ? body : "");
 
-      Message.Builder messageBuilder =
-          Message.builder().setTopic(topic).putAllData(fullData);
+      Message.Builder messageBuilder = Message.builder().setTopic(topic).putAllData(fullData);
 
       String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
       log.info("Successfully sent notification to topic '{}'. Response: {}", topic, response);

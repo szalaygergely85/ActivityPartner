@@ -186,8 +186,7 @@ public class ReviewService {
             || (activity.getActivityDate() != null
                 && activity.getActivityDate().isBefore(LocalDateTime.now()));
     if (!activityEnded) {
-      throw new InvalidParticipantActionException(
-          "Can only review after the activity has ended");
+      throw new InvalidParticipantActionException("Can only review after the activity has ended");
     }
   }
 
