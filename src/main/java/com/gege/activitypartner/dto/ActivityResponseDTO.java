@@ -51,6 +51,9 @@ public class ActivityResponseDTO {
   // Participants count
   private Integer participantsCount;
 
+  // Current requesting user's participation status for this activity (null if not participating)
+  private String currentUserStatus;
+
   // Timestamps
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

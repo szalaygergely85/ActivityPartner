@@ -8,13 +8,16 @@ import com.gege.activitypartner.entity.Activity;
 import com.gege.activitypartner.entity.ActivityStatus;
 import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
+import com.gege.activitypartner.repository.ActivityParticipantRepository;
 import com.gege.activitypartner.repository.ActivityRepository;
 import com.gege.activitypartner.repository.UserRepository;
 import com.gege.activitypartner.util.DistanceCalculator;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class ActivityService {
 
   private final ActivityRepository activityRepository;
   private final UserRepository userRepository;
+  private final ActivityParticipantRepository activityParticipantRepository;
 
   // Create new activity
   public ActivityResponseDTO createActivity(ActivityRequestDTO request, Long creatorId) {
@@ -168,11 +172,19 @@ public class ActivityService {
   // Get nearby activities within radius
   @Transactional(readOnly = true)
   public List<ActivityResponseDTO> getNearbyActivities(
-      Double userLatitude, Double userLongitude, Double radiusKm) {
+      Double userLatitude, Double userLongitude, Double radiusKm, Long userId) {
     List<Activity> allActivities =
         activityRepository.findAvailableUpcomingActivities(LocalDateTime.now());
     BigDecimal userLat = BigDecimal.valueOf(userLatitude);
     BigDecimal userLon = BigDecimal.valueOf(userLongitude);
+
+    // Pre-load all participation statuses for this user in ONE query (avoids N+1)
+    Map<Long, String> userStatusMap = new HashMap<>();
+    if (userId != null) {
+      activityParticipantRepository
+          .findByUserId(userId)
+          .forEach(ap -> userStatusMap.put(ap.getActivity().getId(), ap.getStatus().name()));
+    }
 
     return allActivities.stream()
         .filter(activity -> activity.getLatitude() != null && activity.getLongitude() != null)
@@ -183,7 +195,12 @@ public class ActivityService {
                       userLat, userLon, activity.getLatitude(), activity.getLongitude());
               return distance <= radiusKm;
             })
-        .map(activity -> mapToResponseDTO(activity, userLat, userLon))
+        .map(
+            activity -> {
+              ActivityResponseDTO dto = mapToResponseDTO(activity, userLat, userLon);
+              dto.setCurrentUserStatus(userStatusMap.get(activity.getId()));
+              return dto;
+            })
         .collect(Collectors.toList());
   }
 
@@ -417,7 +434,7 @@ public class ActivityService {
     creatorResponse.setBadge(activity.getCreator().getBadge());
     dto.setCreator(creatorResponse);
 
-    dto.setParticipantsCount(activity.getParticipants().size());
+    dto.setParticipantsCount(activity.getTotalSpots() - activity.getAvailableSpots());
     dto.setCreatedAt(activity.getCreatedAt());
     dto.setUpdatedAt(activity.getUpdatedAt());
     return dto;
