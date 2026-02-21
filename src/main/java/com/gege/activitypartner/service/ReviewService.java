@@ -11,6 +11,7 @@ import com.gege.activitypartner.exception.ResourceNotFoundException;
 import com.gege.activitypartner.repository.ActivityRepository;
 import com.gege.activitypartner.repository.ReviewRepository;
 import com.gege.activitypartner.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -178,13 +179,15 @@ public class ReviewService {
       throw new InvalidParticipantActionException("Cannot review yourself");
     }
 
-    // Activity must be completed or cancelled (allow reviews for activities that ended)
-    // Note: Activities may not be marked as COMPLETED automatically, so we allow CANCELLED status
-    // as well
-    if (activity.getStatus() != ActivityStatus.COMPLETED
-        && activity.getStatus() != ActivityStatus.CANCELLED) {
+    // Allow reviews when the activity is COMPLETED, CANCELLED, or its date has already passed
+    boolean activityEnded =
+        activity.getStatus() == ActivityStatus.COMPLETED
+            || activity.getStatus() == ActivityStatus.CANCELLED
+            || (activity.getActivityDate() != null
+                && activity.getActivityDate().isBefore(LocalDateTime.now()));
+    if (!activityEnded) {
       throw new InvalidParticipantActionException(
-          "Can only review after activity is completed or cancelled");
+          "Can only review after the activity has ended");
     }
   }
 
