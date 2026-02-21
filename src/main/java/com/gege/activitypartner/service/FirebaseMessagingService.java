@@ -26,17 +26,18 @@ public class FirebaseMessagingService {
     }
 
     try {
-      // Build notification
-      Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+      // Build data-only message so onMessageReceived() is always called
+      // regardless of whether the app is in the foreground or background
+      Map<String, String> fullData = new HashMap<>();
+      if (data != null) {
+        fullData.putAll(data);
+      }
+      fullData.put("title", title != null ? title : "");
+      fullData.put("body", body != null ? body : "");
 
       // Build message
       Message.Builder messageBuilder =
-          Message.builder().setToken(fcmToken).setNotification(notification);
-
-      // Add data payload if provided
-      if (data != null && !data.isEmpty()) {
-        messageBuilder.putAllData(data);
-      }
+          Message.builder().setToken(fcmToken).putAllData(fullData);
 
       // Send message
       String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
@@ -134,14 +135,15 @@ public class FirebaseMessagingService {
     }
 
     try {
-      Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+      Map<String, String> fullData = new HashMap<>();
+      if (data != null) {
+        fullData.putAll(data);
+      }
+      fullData.put("title", title != null ? title : "");
+      fullData.put("body", body != null ? body : "");
 
       Message.Builder messageBuilder =
-          Message.builder().setTopic(topic).setNotification(notification);
-
-      if (data != null && !data.isEmpty()) {
-        messageBuilder.putAllData(data);
-      }
+          Message.builder().setTopic(topic).putAllData(fullData);
 
       String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
       log.info("Successfully sent notification to topic '{}'. Response: {}", topic, response);
