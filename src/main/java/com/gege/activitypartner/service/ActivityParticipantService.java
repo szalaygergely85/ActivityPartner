@@ -49,10 +49,8 @@ public class ActivityParticipantService {
       ActivityParticipant participant = existingParticipant.get();
       ParticipantStatus status = participant.getStatus();
 
-      // If active status (INTERESTED, ACCEPTED, JOINED), cannot reapply
-      if (status == ParticipantStatus.INTERESTED
-          || status == ParticipantStatus.ACCEPTED
-          || status == ParticipantStatus.JOINED) {
+      // If active status (INTERESTED, JOINED), cannot reapply
+      if (status == ParticipantStatus.INTERESTED || status == ParticipantStatus.JOINED) {
         throw new DuplicateResourceException(
             "You have already expressed interest in this activity");
       }
@@ -203,24 +201,24 @@ public class ActivityParticipantService {
     ParticipantStatus currentStatus = participant.getStatus();
 
     if (currentStatus == ParticipantStatus.INTERESTED) {
-      // From INTERESTED: can accept or decline
-      if (newStatus != ParticipantStatus.ACCEPTED && newStatus != ParticipantStatus.DECLINED) {
+      // From INTERESTED: can join or decline
+      if (newStatus != ParticipantStatus.JOINED && newStatus != ParticipantStatus.DECLINED) {
         throw new InvalidParticipantActionException(
-            "Creator can only ACCEPT or DECLINE interested users");
+            "Creator can only ACCEPT (JOINED) or DECLINE interested users");
       }
-    } else if (currentStatus == ParticipantStatus.ACCEPTED) {
-      // From ACCEPTED: can only remove (decline)
+    } else if (currentStatus == ParticipantStatus.JOINED) {
+      // From JOINED: can only remove (decline)
       if (newStatus != ParticipantStatus.DECLINED) {
         throw new InvalidParticipantActionException(
-            "Creator can only remove (DECLINE) accepted users");
+            "Creator can only remove (DECLINE) joined users");
       }
     } else {
       throw new InvalidParticipantActionException(
           "Cannot change status of participant with status: " + currentStatus);
     }
 
-    // Check available spots for ACCEPTED
-    if (newStatus == ParticipantStatus.ACCEPTED) {
+    // Check available spots when joining
+    if (newStatus == ParticipantStatus.JOINED) {
       if (participant.getActivity().getAvailableSpots() <= 0) {
         throw new InvalidParticipantActionException("No available spots in this activity");
       }
@@ -231,15 +229,13 @@ public class ActivityParticipantService {
 
     // Notify participant about status change
     String notificationTitle =
-        newStatus == ParticipantStatus.ACCEPTED ? "Interest Accepted!" : "Interest Declined";
+        newStatus == ParticipantStatus.JOINED ? "Request Accepted!" : "Interest Declined";
     String notificationMessage =
-        newStatus == ParticipantStatus.ACCEPTED
-            ? "Your interest in \""
-                + participant.getActivity().getTitle()
-                + "\" was accepted. Confirm your participation!"
+        newStatus == ParticipantStatus.JOINED
+            ? "Your request to join \"" + participant.getActivity().getTitle() + "\" was accepted!"
             : "Your interest in \"" + participant.getActivity().getTitle() + "\" was declined.";
     NotificationType notificationType =
-        newStatus == ParticipantStatus.ACCEPTED
+        newStatus == ParticipantStatus.JOINED
             ? NotificationType.PARTICIPANT_ACCEPTED
             : NotificationType.PARTICIPANT_DECLINED;
 
@@ -322,9 +318,8 @@ public class ActivityParticipantService {
       throw new InvalidParticipantActionException("You have already left this activity");
     }
 
-    // For INTERESTED or ACCEPTED, mark as WITHDRAWN
-    if (participant.getStatus() == ParticipantStatus.INTERESTED
-        || participant.getStatus() == ParticipantStatus.ACCEPTED) {
+    // For INTERESTED, mark as WITHDRAWN
+    if (participant.getStatus() == ParticipantStatus.INTERESTED) {
       participant.setStatus(ParticipantStatus.WITHDRAWN);
       participantRepository.save(participant);
       return;
