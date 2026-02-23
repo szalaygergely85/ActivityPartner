@@ -80,4 +80,11 @@ public interface ActivityParticipantRepository extends JpaRepository<ActivityPar
       "SELECT COUNT(ap) FROM ActivityParticipant ap "
           + "WHERE ap.activity.id = :activityId AND ap.user.id = :userId")
   Long countApplicationAttempts(@Param("activityId") Long activityId, @Param("userId") Long userId);
+
+  // Count occupied spots (ACCEPTED or JOINED participants) for an activity
+  @Query(
+      "SELECT COUNT(ap) FROM ActivityParticipant ap "
+          + "WHERE ap.activity.id = :activityId "
+          + "AND (ap.status = 'ACCEPTED' OR ap.status = 'JOINED')")
+  Long countOccupiedParticipants(@Param("activityId") Long activityId);
 }

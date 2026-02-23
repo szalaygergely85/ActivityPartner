@@ -414,7 +414,8 @@ public class ActivityService {
 
     dto.setCategory(activity.getCategory());
     dto.setTotalSpots(activity.getTotalSpots());
-    dto.setAvailableSpots(activity.getAvailableSpots());
+    long occupiedSpots = activityParticipantRepository.countOccupiedParticipants(activity.getId());
+    dto.setAvailableSpots(activity.getTotalSpots() - (int) occupiedSpots);
     dto.setReservedForFriendsSpots(activity.getReservedForFriendsSpots());
     dto.setMinParticipants(activity.getMinParticipants());
     dto.setStatus(activity.getStatus());
@@ -434,7 +435,7 @@ public class ActivityService {
     creatorResponse.setBadge(activity.getCreator().getBadge());
     dto.setCreator(creatorResponse);
 
-    dto.setParticipantsCount(activity.getTotalSpots() - activity.getAvailableSpots());
+    dto.setParticipantsCount((int) occupiedSpots);
     dto.setCreatedAt(activity.getCreatedAt());
     dto.setUpdatedAt(activity.getUpdatedAt());
     return dto;

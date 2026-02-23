@@ -49,8 +49,8 @@ public class ActivityParticipantService {
       ActivityParticipant participant = existingParticipant.get();
       ParticipantStatus status = participant.getStatus();
 
-      // If active status (INTERESTED, JOINED), cannot reapply
-      if (status == ParticipantStatus.INTERESTED || status == ParticipantStatus.JOINED) {
+      // If active status (INTERESTED, ACCEPTED), cannot reapply
+      if (status == ParticipantStatus.INTERESTED || status == ParticipantStatus.ACCEPTED) {
         throw new DuplicateResourceException(
             "You have already expressed interest in this activity");
       }
@@ -201,24 +201,24 @@ public class ActivityParticipantService {
     ParticipantStatus currentStatus = participant.getStatus();
 
     if (currentStatus == ParticipantStatus.INTERESTED) {
-      // From INTERESTED: can join or decline
-      if (newStatus != ParticipantStatus.JOINED && newStatus != ParticipantStatus.DECLINED) {
+      // From INTERESTED: can accept or decline
+      if (newStatus != ParticipantStatus.ACCEPTED && newStatus != ParticipantStatus.DECLINED) {
         throw new InvalidParticipantActionException(
-            "Creator can only ACCEPT (JOINED) or DECLINE interested users");
+            "Creator can only ACCEPT or DECLINE interested users");
       }
-    } else if (currentStatus == ParticipantStatus.JOINED) {
-      // From JOINED: can only remove (decline)
+    } else if (currentStatus == ParticipantStatus.ACCEPTED) {
+      // From ACCEPTED: can only remove (decline)
       if (newStatus != ParticipantStatus.DECLINED) {
         throw new InvalidParticipantActionException(
-            "Creator can only remove (DECLINE) joined users");
+            "Creator can only remove (DECLINE) accepted users");
       }
     } else {
       throw new InvalidParticipantActionException(
           "Cannot change status of participant with status: " + currentStatus);
     }
 
-    // Check available spots when joining
-    if (newStatus == ParticipantStatus.JOINED) {
+    // Check available spots when accepting
+    if (newStatus == ParticipantStatus.ACCEPTED) {
       if (participant.getActivity().getAvailableSpots() <= 0) {
         throw new InvalidParticipantActionException("No available spots in this activity");
       }
@@ -229,13 +229,13 @@ public class ActivityParticipantService {
 
     // Notify participant about status change
     String notificationTitle =
-        newStatus == ParticipantStatus.JOINED ? "Request Accepted!" : "Interest Declined";
+        newStatus == ParticipantStatus.ACCEPTED ? "Request Accepted!" : "Interest Declined";
     String notificationMessage =
-        newStatus == ParticipantStatus.JOINED
+        newStatus == ParticipantStatus.ACCEPTED
             ? "Your request to join \"" + participant.getActivity().getTitle() + "\" was accepted!"
             : "Your interest in \"" + participant.getActivity().getTitle() + "\" was declined.";
     NotificationType notificationType =
-        newStatus == ParticipantStatus.JOINED
+        newStatus == ParticipantStatus.ACCEPTED
             ? NotificationType.PARTICIPANT_ACCEPTED
             : NotificationType.PARTICIPANT_DECLINED;
 
@@ -325,8 +325,8 @@ public class ActivityParticipantService {
       return;
     }
 
-    // For JOINED, mark as LEFT and notify creator
-    if (participant.getStatus() == ParticipantStatus.JOINED) {
+    // For ACCEPTED, mark as LEFT and notify creator
+    if (participant.getStatus() == ParticipantStatus.ACCEPTED) {
       participant.setStatus(ParticipantStatus.LEFT);
       participantRepository.save(participant);
 
@@ -370,7 +370,7 @@ public class ActivityParticipantService {
     // Query for activities where both users have joined status in completed activities
     // If they've participated together in at least one completed activity, consider them friends
     List<ActivityParticipant> user1Activities =
-        participantRepository.findByUserIdAndStatus(user1.getId(), ParticipantStatus.JOINED);
+        participantRepository.findByUserIdAndStatus(user1.getId(), ParticipantStatus.ACCEPTED);
 
     for (ActivityParticipant participant : user1Activities) {
       // Check if this activity is completed and user2 also participated
@@ -378,7 +378,7 @@ public class ActivityParticipantService {
         boolean user2Participated =
             participantRepository
                 .findByActivityIdAndUserId(participant.getActivity().getId(), user2.getId())
-                .map(p -> p.getStatus() == ParticipantStatus.JOINED)
+                .map(p -> p.getStatus() == ParticipantStatus.ACCEPTED)
                 .orElse(false);
 
         if (user2Participated) {
