@@ -4,12 +4,10 @@ import com.gege.activitypartner.config.JwtUtil;
 import com.gege.activitypartner.entity.AccountDeletionRequest;
 import com.gege.activitypartner.entity.Admin;
 import com.gege.activitypartner.entity.AppLog;
-import com.gege.activitypartner.entity.CrashLog;
 import com.gege.activitypartner.entity.DownloadLog;
 import com.gege.activitypartner.repository.AccountDeletionRequestRepository;
 import com.gege.activitypartner.repository.AdminRepository;
 import com.gege.activitypartner.repository.AppLogRepository;
-import com.gege.activitypartner.repository.CrashLogRepository;
 import com.gege.activitypartner.repository.DownloadLogRepository;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +30,6 @@ public class AdminService {
 
   private final AdminRepository adminRepository;
   private final AccountDeletionRequestRepository accountDeletionRequestRepository;
-  private final CrashLogRepository crashLogRepository;
   private final DownloadLogRepository downloadLogRepository;
   private final AppLogRepository appLogRepository;
   private final PasswordEncoder passwordEncoder;
@@ -84,11 +81,6 @@ public class AdminService {
               request.setProcessedAt(LocalDateTime.now());
               accountDeletionRequestRepository.save(request);
             });
-  }
-
-  // Get recent crash logs
-  public List<CrashLog> getRecentCrashLogs() {
-    return crashLogRepository.findTop100ByOrderByReceivedAtDesc();
   }
 
   // Get recent download logs
