@@ -56,7 +56,9 @@ public class SecurityConfig {
                         "/api/users/register",
                         "/api/users/login",
                         "/api/users/refresh-token",
-                        "/api/users/web-logout")
+                        "/api/users/web-logout",
+                        "/api/users/forgot-password",
+                        "/api/users/reset-password")
                     .permitAll()
                     .requestMatchers("/api/categories/**")
                     .permitAll() // Categories are public for browsing
@@ -75,6 +77,7 @@ public class SecurityConfig {
                         "/terms",
                         "/support",
                         "/delete-account",
+                        "/reset-password",
                         "/login",
                         "/register",
                         "/create-activity")

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Controller for serving static pages like privacy policy, terms of service, etc. These pages are
@@ -14,6 +15,9 @@ public class PageController {
 
   @Value("${google.api.key:}")
   private String googleApiKey;
+
+  @Value("${recaptcha.site-key:}")
+  private String recaptchaSiteKey;
 
   @GetMapping("/")
   public String home() {
@@ -38,6 +42,13 @@ public class PageController {
   @GetMapping("/delete-account")
   public String deleteAccount() {
     return "delete-account";
+  }
+
+  @GetMapping("/reset-password")
+  public String resetPassword(@RequestParam(required = false) String token, Model model) {
+    model.addAttribute("token", token != null ? token : "");
+    model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
+    return "reset-password";
   }
 
   @GetMapping("/admin")

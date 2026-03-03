@@ -10,25 +10,40 @@ import com.gege.activitypartner.dto.UserRegistrationRequest;
 import com.gege.activitypartner.dto.UserResponse;
 import com.gege.activitypartner.dto.UserSimpleResponse;
 import com.gege.activitypartner.entity.AccountDeletionRequest;
+import com.gege.activitypartner.entity.PasswordResetToken;
 import com.gege.activitypartner.entity.RefreshToken;
 import com.gege.activitypartner.entity.User;
 import com.gege.activitypartner.exception.DuplicateResourceException;
 import com.gege.activitypartner.exception.ResourceNotFoundException;
 import com.gege.activitypartner.repository.AccountDeletionRequestRepository;
+import com.gege.activitypartner.repository.PasswordResetTokenRepository;
 import com.gege.activitypartner.repository.UserRepository;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 @Service
 @RequiredArgsConstructor
@@ -36,10 +51,23 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final AccountDeletionRequestRepository accountDeletionRequestRepository;
+  private final PasswordResetTokenRepository passwordResetTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
   private final RefreshTokenService refreshTokenService;
   private final FileStorageService fileStorageService;
+  private final JavaMailSender mailSender;
+  private final TemplateEngine templateEngine;
+
+  @Value("${app.base-url}")
+  private String baseUrl;
+
+  @Value("${app.password-reset-expiry-minutes:60}")
+  private int resetExpiryMinutes;
+
+  @Value("${recaptcha.secret-key:}")
+  private String recaptchaSecretKey;
+
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
   // Login user
@@ -316,6 +344,97 @@ public class UserService {
       accountDeletionRequestRepository.save(request);
     }
     // Always succeeds silently - don't reveal if email exists or if request was already made
+  }
+
+  // Send password reset email
+  @Transactional
+  public void forgotPassword(String email) {
+    // Always return silently — don't reveal whether the email exists
+    userRepository
+        .findByEmail(email)
+        .ifPresent(
+            user -> {
+              // Remove any existing token for this user
+              passwordResetTokenRepository.deleteByUser(user);
+
+              // Create new token
+              PasswordResetToken resetToken = new PasswordResetToken();
+              resetToken.setToken(UUID.randomUUID().toString());
+              resetToken.setUser(user);
+              resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(resetExpiryMinutes));
+              passwordResetTokenRepository.save(resetToken);
+
+              // Send email
+              String resetLink = baseUrl + "/reset-password?token=" + resetToken.getToken();
+              try {
+                sendPasswordResetEmail(user.getEmail(), user.getFullName(), resetLink);
+              } catch (Exception e) {
+                // Log but don't expose error
+                System.err.println("Failed to send password reset email: " + e.getMessage());
+              }
+            });
+  }
+
+  // Reset password using token
+  @Transactional
+  public void resetPassword(String token, String newPassword, String recaptchaToken) {
+    // Verify reCAPTCHA if secret key is configured
+    if (recaptchaSecretKey != null && !recaptchaSecretKey.isBlank()) {
+      if (recaptchaToken == null || recaptchaToken.isBlank() || !verifyRecaptcha(recaptchaToken)) {
+        throw new IllegalArgumentException("CAPTCHA verification failed. Please try again.");
+      }
+    }
+
+    PasswordResetToken resetToken =
+        passwordResetTokenRepository
+            .findByToken(token)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset link."));
+
+    if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+      passwordResetTokenRepository.delete(resetToken);
+      throw new IllegalArgumentException("This reset link has expired. Please request a new one.");
+    }
+
+    User user = resetToken.getUser();
+    user.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.save(user);
+
+    // Invalidate the token and all sessions
+    passwordResetTokenRepository.delete(resetToken);
+    refreshTokenService.deactivateAllUserTokens(user.getId());
+  }
+
+  private boolean verifyRecaptcha(String token) {
+    try {
+      String body = "secret=" + recaptchaSecretKey + "&response=" + token;
+      HttpRequest request =
+          HttpRequest.newBuilder()
+              .uri(URI.create("https://www.google.com/recaptcha/api/siteverify"))
+              .header("Content-Type", "application/x-www-form-urlencoded")
+              .POST(HttpRequest.BodyPublishers.ofString(body))
+              .build();
+      HttpResponse<String> response =
+          HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+      return response.body().contains("\"success\": true");
+    } catch (Exception e) {
+      System.err.println("reCAPTCHA verification error: " + e.getMessage());
+      return false;
+    }
+  }
+
+  private void sendPasswordResetEmail(String toEmail, String userName, String resetLink)
+      throws MessagingException {
+    Context ctx = new Context();
+    ctx.setVariable("userName", userName);
+    ctx.setVariable("resetLink", resetLink);
+    String htmlContent = templateEngine.process("password-reset-email", ctx);
+
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    helper.setTo(toEmail);
+    helper.setSubject("Reset your Vivento password");
+    helper.setText(htmlContent, true);
+    mailSender.send(message);
   }
 
   // Update profile image

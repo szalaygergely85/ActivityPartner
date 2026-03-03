@@ -1,8 +1,10 @@
 package com.gege.activitypartner.controller;
 
+import com.gege.activitypartner.dto.ForgotPasswordRequest;
 import com.gege.activitypartner.dto.LoginRequest;
 import com.gege.activitypartner.dto.LoginResponse;
 import com.gege.activitypartner.dto.RefreshTokenRequest;
+import com.gege.activitypartner.dto.ResetPasswordRequest;
 import com.gege.activitypartner.dto.UserProfileUpdateRequest;
 import com.gege.activitypartner.dto.UserRegistrationRequest;
 import com.gege.activitypartner.dto.UserResponse;
@@ -152,6 +154,22 @@ public class UserController {
   public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
     userService.deactivateUser(id);
     return ResponseEntity.noContent().build();
+  }
+
+  // Forgot password — sends reset email
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    userService.forgotPassword(request.getEmail());
+    // Always return 200 — don't reveal if email exists
+    return ResponseEntity.ok().build();
+  }
+
+  // Reset password using token from email
+  @PostMapping("/reset-password")
+  public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    userService.resetPassword(
+        request.getToken(), request.getNewPassword(), request.getRecaptchaToken());
+    return ResponseEntity.ok().build();
   }
 
   // Request account deletion (public endpoint for Google Play compliance)

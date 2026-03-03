@@ -37,3 +37,7 @@ out/
 .vscode/
 *.md
 *.jpg
+*.pem
+*.log
+/uploads/cover-images/
+/uploads/profile-images/
