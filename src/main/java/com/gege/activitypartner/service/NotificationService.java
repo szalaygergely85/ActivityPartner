@@ -68,11 +68,11 @@ public class NotificationService {
 
   /** Check whether a notification type is allowed by the user's preferences */
   private boolean isNotificationAllowed(User user, NotificationType type) {
-    if (!Boolean.TRUE.equals(user.getNotificationsEnabled())) {
+    if (Boolean.FALSE.equals(user.getNotificationsEnabled())) {
       return false;
     }
     if (type == NotificationType.ACTIVITY_REMINDER) {
-      return Boolean.TRUE.equals(user.getRemindersEnabled());
+      return !Boolean.FALSE.equals(user.getRemindersEnabled());
     }
     switch (type) {
       case ACTIVITY_CREATED:
@@ -86,7 +86,7 @@ public class NotificationService {
       case PARTICIPANT_LEFT:
       case REVIEW_RECEIVED:
       case NEW_MESSAGE:
-        return Boolean.TRUE.equals(user.getActivityUpdatesEnabled());
+        return !Boolean.FALSE.equals(user.getActivityUpdatesEnabled());
       default:
         return true; // System notifications (badges, milestones, general) are always sent
     }

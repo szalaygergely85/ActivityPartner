@@ -35,8 +35,12 @@ public class FirebaseMessagingService {
       fullData.put("title", title != null ? title : "");
       fullData.put("body", body != null ? body : "");
 
-      // Build message
-      Message.Builder messageBuilder = Message.builder().setToken(fcmToken).putAllData(fullData);
+      // Build message with HIGH priority so Android delivers it even when app is killed/in Doze
+      // mode
+      AndroidConfig androidConfig =
+          AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build();
+      Message.Builder messageBuilder =
+          Message.builder().setToken(fcmToken).putAllData(fullData).setAndroidConfig(androidConfig);
 
       // Send message
       String response = FirebaseMessaging.getInstance().send(messageBuilder.build());
