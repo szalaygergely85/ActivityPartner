@@ -611,6 +611,7 @@
                 document.getElementById('latitude').value = lat;
                 document.getElementById('longitude').value = lng;
                 inputEl.value = place.formattedAddress || place.displayName || prediction.text.text;
+                inputEl.classList.remove('border-danger', 'ring-2', 'ring-danger/50');
 
                 // Start a new session for the next search
                 sessionToken = new AutocompleteSessionToken();
@@ -683,13 +684,21 @@
                     activityData.coverImageUrl = selectedCoverUrl;
                 }
 
-                // Location coordinates
+                // Location coordinates — must have selected from autocomplete
                 const placeId = document.getElementById('placeId').value;
                 const lat = document.getElementById('latitude').value;
                 const lng = document.getElementById('longitude').value;
+
+                if (!lat || !lng) {
+                    document.getElementById('location').classList.add('border-danger', 'ring-2', 'ring-danger/50');
+                    document.getElementById('location').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    throw new Error('Please select a location from the suggestions list so we can find it on the map.');
+                }
+                document.getElementById('location').classList.remove('border-danger', 'ring-2', 'ring-danger/50');
+
                 if (placeId) activityData.placeId = placeId;
-                if (lat) activityData.latitude = parseFloat(lat);
-                if (lng) activityData.longitude = parseFloat(lng);
+                activityData.latitude = parseFloat(lat);
+                activityData.longitude = parseFloat(lng);
 
                 // Create activity
                 const response = await fetch('/api/activities', {
