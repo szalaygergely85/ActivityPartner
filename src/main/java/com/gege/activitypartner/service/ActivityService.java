@@ -195,6 +195,8 @@ public class ActivityService {
                       userLat, userLon, activity.getLatitude(), activity.getLongitude());
               return distance <= radiusKm;
             })
+        .filter(activity -> userId == null || !activity.getCreator().getId().equals(userId))
+        .filter(activity -> activity.getAvailableSpots() > 0)
         .map(
             activity -> {
               ActivityResponseDTO dto = mapToResponseDTO(activity, userLat, userLon);
